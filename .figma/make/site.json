@@ -1,0 +1,10 @@
+{
+  "description": "Simplify task management with an intuitive app that helps users organize, track, and complete daily activities efficiently.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
