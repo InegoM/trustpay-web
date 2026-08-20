@@ -1,6 +1,8 @@
 export type View =
   | "overview"
   | "projects"
+  | "new-project"
+  | "invite-customer"
   | "project-details"
   | "milestone-review"
   | "confirm-approval"

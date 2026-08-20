@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
-import { CURRENT_USER } from "@/data/mock";
 import type { View } from "@/types";
+import { useAuth } from "@/state/AuthContext";
+import { useTrustPay } from "@/state/TrustPayContext";
 
 interface LayoutProps {
   children: ReactNode;
@@ -12,7 +13,7 @@ function navSection(view: View): "overview" | "projects" | "activity" | "other" 
   if (view === "overview") return "overview";
   if (view === "activity") return "activity";
   const projectViews: View[] = [
-    "projects", "project-details", "milestone-review", "confirm-approval",
+    "projects", "new-project", "project-details", "invite-customer", "milestone-review", "confirm-approval",
     "milestone-approved", "request-changes", "request-changes-result",
     "raise-dispute", "raise-dispute-result",
   ];
@@ -20,18 +21,20 @@ function navSection(view: View): "overview" | "projects" | "activity" | "other" 
   return "other";
 }
 
-function breadcrumb(view: View): string[] {
+function breadcrumb(view: View, projectName: string): string[] {
   switch (view) {
     case "overview": return ["Overview"];
     case "projects": return ["Projects"];
-    case "project-details": return ["Projects", "Café Renovation"];
-    case "milestone-review": return ["Projects", "Café Renovation", "Review Milestone"];
-    case "confirm-approval": return ["Projects", "Café Renovation", "Confirm Approval"];
-    case "milestone-approved": return ["Projects", "Café Renovation", "Milestone Approved"];
-    case "request-changes": return ["Projects", "Café Renovation", "Request Changes"];
-    case "request-changes-result": return ["Projects", "Café Renovation", "Changes Requested"];
-    case "raise-dispute": return ["Projects", "Café Renovation", "Raise Dispute"];
-    case "raise-dispute-result": return ["Projects", "Café Renovation", "Dispute Recorded"];
+    case "new-project": return ["Projects", "New project"];
+    case "project-details": return ["Projects", projectName];
+    case "invite-customer": return ["Projects", projectName, "Invite customer"];
+    case "milestone-review": return ["Projects", projectName, "Review Milestone"];
+    case "confirm-approval": return ["Projects", projectName, "Confirm Approval"];
+    case "milestone-approved": return ["Projects", projectName, "Milestone Approved"];
+    case "request-changes": return ["Projects", projectName, "Request Changes"];
+    case "request-changes-result": return ["Projects", projectName, "Changes Requested"];
+    case "raise-dispute": return ["Projects", projectName, "Raise Dispute"];
+    case "raise-dispute-result": return ["Projects", projectName, "Dispute Recorded"];
     case "activity": return ["Activity"];
     default: return [];
   }
@@ -82,8 +85,17 @@ const BellIcon = () => (
 );
 
 export default function Layout({ children, currentView, navigate }: LayoutProps) {
+  const { user, logout } = useAuth();
+  const { project } = useTrustPay();
   const section = navSection(currentView);
-  const crumbs = breadcrumb(currentView);
+  const crumbs = breadcrumb(currentView, project.name);
+  const organization = user?.organizations[0];
+  const initials = user?.displayName
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() ?? "TP";
 
   const navBtn = (
     label: string,
@@ -152,12 +164,18 @@ export default function Layout({ children, currentView, navigate }: LayoutProps)
                 className="w-8 h-8 rounded-full bg-brand flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                {CURRENT_USER.initials}
+                {initials}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-medium text-ink truncate">{CURRENT_USER.name}</p>
-                <p className="text-xs text-muted truncate">{CURRENT_USER.company}</p>
+                <p className="text-sm font-medium text-ink truncate">{user?.displayName}</p>
+                <p className="text-xs text-muted truncate">{organization?.name ?? "No organization"}</p>
               </div>
+            </button>
+            <button
+              onClick={() => void logout()}
+              className="mt-1 w-full rounded-lg px-3 py-2 text-left text-xs font-medium text-muted hover:bg-edge/50 hover:text-ink"
+            >
+              Sign out
             </button>
           </div>
         </div>
@@ -198,7 +216,7 @@ export default function Layout({ children, currentView, navigate }: LayoutProps)
               style={{ fontFamily: "var(--font-display)" }}
               aria-hidden="true"
             >
-              {CURRENT_USER.initials}
+              {initials}
             </div>
           </div>
         </header>
