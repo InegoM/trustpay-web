@@ -1,6 +1,6 @@
 # M00 UI baseline
 
-**Recorded:** 2026-08-26  
+**Recorded:** 2026-08-26
 **Scope:** inventory and verification plan only. M00 does not redesign the shell, add M01 routing, or add later workflow features.
 
 ## Screen inventory
