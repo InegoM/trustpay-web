@@ -72,46 +72,54 @@ function AppContent() {
       : view
 
   return (
-    <Layout currentView={visibleView} navigate={navigate}>
-      {syncStatus === "loading" && (
-        <div className="mb-5 rounded-xl border border-brand-mid bg-brand-light px-4 py-3 text-sm text-ink-dim" role="status">
-          Synchronizing project data with TrustPay API…
-        </div>
-      )}
-      {syncStatus === "error" && (
-        <div className="mb-5 flex items-center justify-between gap-4 rounded-xl border border-danger/25 bg-danger-light px-4 py-3" role="alert">
-          <div>
-            <p className="text-sm font-semibold text-danger">API connection unavailable</p>
-            <p className="mt-0.5 text-xs text-ink-dim">
-              {syncError ?? "The latest project data could not be loaded."}
-            </p>
+    <>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-ink focus:px-4 focus:py-3 focus:text-white"
+      >
+        Skip to main content
+      </a>
+      <Layout currentView={visibleView} navigate={navigate}>
+        {syncStatus === "loading" && (
+          <div className="mb-5 rounded-xl border border-brand-mid bg-brand-light px-4 py-3 text-sm text-ink-dim" role="status">
+            Synchronizing project data with TrustPay API…
           </div>
-          <button
-            onClick={() => void refresh()}
-            className="flex-shrink-0 rounded-lg border border-danger/30 px-3 py-1.5 text-xs font-semibold text-danger hover:bg-danger/10"
-          >
-            Retry
-          </button>
-        </div>
-      )}
-      {visibleView === "overview" && <Overview navigate={navigate} />}
-      {visibleView === "projects" && <Projects navigate={navigate} />}
-      {visibleView === "new-project" && <NewProject navigate={navigate} />}
-      {visibleView === "project-details" && <ProjectDetails navigate={navigate} />}
-      {visibleView === "invite-customer" && <InviteCustomer navigate={navigate} />}
-      {visibleView === "milestone-review" && <MilestoneReview navigate={navigate} />}
-      {visibleView === "confirm-approval" && <ConfirmApproval navigate={navigate} />}
-      {visibleView === "milestone-approved" && (
-        <MilestoneApproved navigate={navigate} />
-      )}
-      {visibleView === "request-changes" && <RequestChanges navigate={navigate} />}
-      {visibleView === "request-changes-result" && (
-        <RequestChanges navigate={navigate} />
-      )}
-      {visibleView === "raise-dispute" && <RaiseDispute navigate={navigate} />}
-      {visibleView === "raise-dispute-result" && <RaiseDispute navigate={navigate} />}
-      {visibleView === "activity" && <Activity navigate={navigate} />}
-    </Layout>
+        )}
+        {syncStatus === "error" && (
+          <div className="mb-5 flex items-center justify-between gap-4 rounded-xl border border-danger/25 bg-danger-light px-4 py-3" role="alert">
+            <div>
+              <p className="text-sm font-semibold text-danger">API connection unavailable</p>
+              <p className="mt-0.5 text-xs text-ink-dim">
+                {syncError ?? "The latest project data could not be loaded."}
+              </p>
+            </div>
+            <button
+              onClick={() => void refresh()}
+              className="flex-shrink-0 rounded-lg border border-danger/30 px-3 py-1.5 text-xs font-semibold text-danger hover:bg-danger/10"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+        {visibleView === "overview" && <Overview navigate={navigate} />}
+        {visibleView === "projects" && <Projects navigate={navigate} />}
+        {visibleView === "new-project" && <NewProject navigate={navigate} />}
+        {visibleView === "project-details" && <ProjectDetails navigate={navigate} />}
+        {visibleView === "invite-customer" && <InviteCustomer navigate={navigate} />}
+        {visibleView === "milestone-review" && <MilestoneReview navigate={navigate} />}
+        {visibleView === "confirm-approval" && <ConfirmApproval navigate={navigate} />}
+        {visibleView === "milestone-approved" && (
+          <MilestoneApproved navigate={navigate} />
+        )}
+        {visibleView === "request-changes" && <RequestChanges navigate={navigate} />}
+        {visibleView === "request-changes-result" && (
+          <RequestChanges navigate={navigate} />
+        )}
+        {visibleView === "raise-dispute" && <RaiseDispute navigate={navigate} />}
+        {visibleView === "raise-dispute-result" && <RaiseDispute navigate={navigate} />}
+        {visibleView === "activity" && <Activity navigate={navigate} />}
+      </Layout>
+    </>
   )
 }
 

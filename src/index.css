@@ -15,6 +15,24 @@
   --color-danger: #DC2626;
   --color-danger-light: #FEE8E8;
   --color-edge: #E6E3DE;
+  /* M00 semantic aliases; existing visual tokens remain for incremental adoption. */
+  --color-surface-canvas: var(--color-canvas);
+  --color-surface-card: var(--color-card);
+  --color-surface-raised: var(--color-card);
+  --color-surface-subtle: var(--color-brand-light);
+  --color-text-primary: var(--color-ink);
+  --color-text-secondary: var(--color-ink-dim);
+  --color-text-muted: var(--color-muted);
+  --color-border-default: var(--color-edge);
+  --color-border-strong: var(--color-ink-dim);
+  --color-action-primary: var(--color-brand);
+  --color-action-secondary: var(--color-ink);
+  --color-status-success: var(--color-brand);
+  --color-status-pending: var(--color-warn);
+  --color-status-warning: var(--color-warn);
+  --color-status-danger: var(--color-danger);
+  --color-status-neutral: var(--color-muted);
+  --color-focus-ring: var(--color-brand);
   --font-display: "Plus Jakarta Sans", sans-serif;
   --font-body: "Inter", sans-serif;
 }
