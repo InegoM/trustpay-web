@@ -79,6 +79,7 @@ function AppContent() {
     ? project.milestones.find((item) => item.id === route.milestoneId)
     : undefined;
   const decisionViews: View[] = ["confirm-approval", "request-changes", "raise-dispute"];
+  const layoutView = projectRoutePending ? "projects" : view;
 
   let content;
   if (route.view === "not-found") {
@@ -164,7 +165,7 @@ function AppContent() {
   else content = <Activity navigate={navigate} />;
 
   return (
-    <Layout currentView={view} navigate={navigate}>
+    <Layout currentView={layoutView} navigate={navigate}>
       {syncStatus === "error" && !projectRoutePending && (
         <div
           className="mb-5 rounded-xl border border-danger/25 bg-danger-light px-4 py-3"
