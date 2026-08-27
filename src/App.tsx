@@ -55,13 +55,15 @@ function AppContent() {
     const handleHashChange = () => {
       const next = routeFromHash(window.location.hash);
       setRoute(next);
-      if (next.projectId && next.projectId !== project.id) void selectProject(next.projectId);
+      if (next.projectId && next.projectId !== project.id && syncStatus === "connected") {
+        void selectProject(next.projectId);
+      }
       document.getElementById("main-content")?.scrollTo({ top: 0 });
     };
     window.addEventListener("hashchange", handleHashChange);
     handleHashChange();
     return () => window.removeEventListener("hashchange", handleHashChange);
-  }, [project.id, selectProject]);
+  }, [project.id, selectProject, syncStatus]);
 
   const navigate: Navigate = (view, params = {}) => {
     const nextHash = hashForView(view, {
