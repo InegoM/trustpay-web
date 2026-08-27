@@ -20,8 +20,8 @@ Copy-Item .env.example .env
 pnpm dev
 ```
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
+| Variable       | Default                 | Purpose                                                    |
+| -------------- | ----------------------- | ---------------------------------------------------------- |
 | `VITE_API_URL` | `http://localhost:3001` | TrustPay API origin used for credentialed browser requests |
 
 The local development server listens on port 8443. Run the API database setup and API server first. Development-only prototype-account shortcuts are intentionally omitted from production builds; use the normal organization invitation/login flow for any non-development environment.

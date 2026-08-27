@@ -1,23 +1,23 @@
-import { useState } from "react"
+import { useState } from "react";
 
-import { useTrustPay } from "@/state/TrustPayContext"
-import type { PageProps } from "@/types"
+import { useTrustPay } from "@/state/TrustPayContext";
+import type { PageProps } from "@/types";
 
 const CARD =
-  "bg-card rounded-2xl border border-edge shadow-[0_2px_12px_rgba(13,31,64,0.06),0_1px_3px_rgba(13,31,64,0.04)]"
+  "bg-card rounded-2xl border border-edge shadow-[0_2px_12px_rgba(13,31,64,0.06),0_1px_3px_rgba(13,31,64,0.04)]";
 
 export default function RaiseDispute({ navigate }: PageProps) {
-  const [submitted, setSubmitted] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [disputeReason, setDisputeReason] = useState(
     "Work does not match the approved electrical layout.",
-  )
+  );
 
-  const [explanation, setExplanation] = useState("")
+  const [explanation, setExplanation] = useState("");
 
-  const { project: PROJECT, raiseDispute, lastDecision } = useTrustPay()
-  const m = PROJECT.milestones[1]
+  const { project: PROJECT, raiseDispute, lastDecision } = useTrustPay();
+  const m = PROJECT.milestones[1];
 
   if (submitted) {
     return (
@@ -29,24 +29,15 @@ export default function RaiseDispute({ navigate }: PageProps) {
           >
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
               <circle cx="16" cy="16" r="13" fill="#DC2626" />
-              <path
-                d="M16 10v7"
-                stroke="white"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              />
+              <path d="M16 10v7" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
               <circle cx="16" cy="21.5" r="1.5" fill="white" />
             </svg>
           </div>
-          <h1
-            style={{ fontFamily: "var(--font-display)" }}
-            className="text-3xl font-bold text-ink"
-          >
+          <h1 style={{ fontFamily: "var(--font-display)" }} className="text-3xl font-bold text-ink">
             Dispute recorded
           </h1>
           <p className="text-muted text-base mt-2">
-            The dispute has been formally recorded. The milestone decision is
-            paused.
+            The dispute has been formally recorded. The milestone decision is paused.
           </p>
         </div>
 
@@ -85,9 +76,7 @@ export default function RaiseDispute({ navigate }: PageProps) {
         </div>
 
         <div className="rounded-2xl bg-danger-light border border-danger/20 p-5">
-          <p className="text-sm font-semibold text-danger mb-2">
-            Dispute status
-          </p>
+          <p className="text-sm font-semibold text-danger mb-2">Dispute status</p>
           <ul className="space-y-2 text-sm text-ink-dim">
             {[
               "The milestone decision is paused. No approval or rejection has been recorded.",
@@ -99,9 +88,7 @@ export default function RaiseDispute({ navigate }: PageProps) {
               "The next step is a mediator site inspection.",
             ].map((item, i) => (
               <li key={i} className="flex items-start gap-2 leading-snug">
-                <span className="text-danger mt-0.5 flex-shrink-0">
-                  &#8250;
-                </span>
+                <span className="text-danger mt-0.5 flex-shrink-0">&#8250;</span>
                 {item}
               </li>
             ))}
@@ -116,11 +103,10 @@ export default function RaiseDispute({ navigate }: PageProps) {
         </button>
 
         <p className="text-xs text-muted text-center">
-          TrustPay records agreements, evidence, and decisions. It does not hold
-          or transfer money.
+          TrustPay records agreements, evidence, and decisions. It does not hold or transfer money.
         </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -132,13 +118,7 @@ export default function RaiseDispute({ navigate }: PageProps) {
           className="mt-1 p-2 rounded-xl hover:bg-edge/60 transition-all text-muted hover:text-ink flex-shrink-0"
           aria-label="Go back to milestone review"
         >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 18 18"
-            fill="none"
-            aria-hidden="true"
-          >
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
             <path
               d="M11 4L6 9L11 14"
               stroke="currentColor"
@@ -149,10 +129,7 @@ export default function RaiseDispute({ navigate }: PageProps) {
           </svg>
         </button>
         <div>
-          <h1
-            style={{ fontFamily: "var(--font-display)" }}
-            className="text-2xl font-bold text-ink"
-          >
+          <h1 style={{ fontFamily: "var(--font-display)" }} className="text-2xl font-bold text-ink">
             Raise Dispute
           </h1>
           <p className="text-muted text-sm mt-1">
@@ -178,23 +155,15 @@ export default function RaiseDispute({ navigate }: PageProps) {
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-          <path
-            d="M10 8v5"
-            stroke="#DC2626"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
+          <path d="M10 8v5" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" />
           <circle cx="10" cy="15" r="0.75" fill="#DC2626" />
         </svg>
         <div>
-          <p className="text-sm font-semibold text-danger">
-            Before you proceed
-          </p>
+          <p className="text-sm font-semibold text-danger">Before you proceed</p>
           <p className="text-sm text-ink-dim mt-1 leading-relaxed">
-            Raising a dispute formally pauses the milestone decision. The
-            agreement, submitted evidence, and all records are preserved. The
-            next step may involve a mediator or site inspection. This action
-            cannot be undone.
+            Raising a dispute formally pauses the milestone decision. The agreement, submitted
+            evidence, and all records are preserved. The next step may involve a mediator or site
+            inspection. This action cannot be undone.
           </p>
         </div>
       </div>
@@ -203,10 +172,7 @@ export default function RaiseDispute({ navigate }: PageProps) {
       <div className={`${CARD} p-6 space-y-5`}>
         {/* Dispute reason */}
         <div>
-          <label
-            className="block text-sm font-medium text-ink mb-2"
-            htmlFor="dispute-reason"
-          >
+          <label className="block text-sm font-medium text-ink mb-2" htmlFor="dispute-reason">
             Dispute reason <span className="text-danger">*</span>
           </label>
           <input
@@ -221,10 +187,7 @@ export default function RaiseDispute({ navigate }: PageProps) {
 
         {/* Detailed explanation */}
         <div>
-          <label
-            className="block text-sm font-medium text-ink mb-2"
-            htmlFor="explanation"
-          >
+          <label className="block text-sm font-medium text-ink mb-2" htmlFor="explanation">
             Detailed explanation <span className="text-danger">*</span>
           </label>
           <textarea
@@ -240,17 +203,10 @@ export default function RaiseDispute({ navigate }: PageProps) {
         {/* Supporting attachment */}
         <div>
           <label className="block text-sm font-medium text-ink mb-2">
-            Supporting documentation{" "}
-            <span className="text-muted font-normal">(optional)</span>
+            Supporting documentation <span className="text-muted font-normal">(optional)</span>
           </label>
           <div className="border-2 border-dashed border-edge rounded-xl p-6 flex flex-col items-center justify-center gap-2 hover:border-danger/30 hover:bg-edge/20 transition-all cursor-pointer">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-            >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path
                 d="M12 16V8M8 12l4-4 4 4"
                 stroke="#7A7870"
@@ -266,8 +222,7 @@ export default function RaiseDispute({ navigate }: PageProps) {
               />
             </svg>
             <p className="text-sm text-muted">
-              Drop a file here or{" "}
-              <span className="text-brand font-medium">browse</span>
+              Drop a file here or <span className="text-brand font-medium">browse</span>
             </p>
           </div>
         </div>
@@ -280,21 +235,19 @@ export default function RaiseDispute({ navigate }: PageProps) {
           <ul className="space-y-1.5 text-xs text-ink-dim">
             <li className="flex items-start gap-2">
               <span className="text-muted mt-0.5">&#8250;</span>
-              The milestone decision is paused — no approval or rejection is
-              recorded.
+              The milestone decision is paused — no approval or rejection is recorded.
             </li>
             <li className="flex items-start gap-2">
               <span className="text-muted mt-0.5">&#8250;</span>
               All submitted evidence and agreement details are preserved.
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-muted mt-0.5">&#8250;</span>A mediator or
-              site inspection may be required to resolve the dispute.
+              <span className="text-muted mt-0.5">&#8250;</span>A mediator or site inspection may be
+              required to resolve the dispute.
             </li>
             <li className="flex items-start gap-2">
               <span className="text-muted mt-0.5">&#8250;</span>
-              TrustPay does not hold or release any funds — payment is handled
-              externally.
+              TrustPay does not hold or release any funds — payment is handled externally.
             </li>
           </ul>
         </div>
@@ -310,26 +263,21 @@ export default function RaiseDispute({ navigate }: PageProps) {
         </button>
         <button
           onClick={async () => {
-            if (
-              disputeReason.trim() &&
-              explanation.trim()
-            ) {
-              setIsSubmitting(true)
+            if (disputeReason.trim() && explanation.trim()) {
+              setIsSubmitting(true);
               if (
                 await raiseDispute(m.id, {
                   reason: disputeReason,
                   explanation,
                 })
               ) {
-                setSubmitted(true)
+                setSubmitted(true);
               } else {
-                setIsSubmitting(false)
+                setIsSubmitting(false);
               }
             }
           }}
-          disabled={
-            isSubmitting || !disputeReason.trim() || !explanation.trim()
-          }
+          disabled={isSubmitting || !disputeReason.trim() || !explanation.trim()}
           className="flex-1 px-5 py-3 bg-danger text-white text-sm font-semibold rounded-xl hover:bg-danger/90 active:scale-[0.99] transition-all focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? "Recording dispute…" : "Record dispute"}
@@ -337,9 +285,8 @@ export default function RaiseDispute({ navigate }: PageProps) {
       </div>
 
       <p className="text-xs text-muted text-center">
-        TrustPay records agreements, evidence, and decisions. It does not hold
-        or transfer money.
+        TrustPay records agreements, evidence, and decisions. It does not hold or transfer money.
       </p>
     </div>
-  )
+  );
 }

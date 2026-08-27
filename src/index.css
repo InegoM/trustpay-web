@@ -1,20 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-@import 'tailwindcss';
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap");
+@import "tailwindcss";
 
 @theme {
-  --color-canvas: #F7F5F1;
-  --color-card: #FFFFFF;
-  --color-ink: #0D1F40;
+  --color-canvas: #f7f5f1;
+  --color-card: #ffffff;
+  --color-ink: #0d1f40;
   --color-ink-dim: #435170;
-  --color-muted: #7A7870;
-  --color-brand: #2B9B8E;
-  --color-brand-light: #E8F5F3;
-  --color-brand-mid: #B8E4DE;
-  --color-warn: #C97B06;
-  --color-warn-light: #FEF3C7;
-  --color-danger: #DC2626;
-  --color-danger-light: #FEE8E8;
-  --color-edge: #E6E3DE;
+  --color-muted: #7a7870;
+  --color-brand: #2b9b8e;
+  --color-brand-light: #e8f5f3;
+  --color-brand-mid: #b8e4de;
+  --color-warn: #c97b06;
+  --color-warn-light: #fef3c7;
+  --color-danger: #dc2626;
+  --color-danger-light: #fee8e8;
+  --color-edge: #e6e3de;
   /* M00 semantic aliases; existing visual tokens remain for incremental adoption. */
   --color-surface-canvas: var(--color-canvas);
   --color-surface-card: var(--color-card);
@@ -37,11 +37,15 @@
   --font-body: "Inter", sans-serif;
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   margin: 0;
   padding: 0;

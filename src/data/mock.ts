@@ -6,92 +6,108 @@ export const CURRENT_USER = {
   initials: "NR",
 
   role: "SME Owner",
-}
+};
 
-export type MilestoneStatus = "approved" | "awaiting-decision" | "changes-requested" | "disputed" | "not-started"
-export type EvidenceType = "image" | "pdf" | "document"
+export type MilestoneStatus =
+  | "approved"
+  | "awaiting-decision"
+  | "changes-requested"
+  | "disputed"
+  | "not-started";
+export type EvidenceType = "image" | "pdf" | "document";
 
-export type ActorType = "sme" | "customer" | "system"
+export type ActorType = "sme" | "customer" | "system";
 
-export type EventType = "project-created" | "customer-invited" | "customer-approver-joined" | "agreement-accepted" | "agreement-sent" | "evidence-submitted" | "milestone-approved" | "variation-approved" | "decision-recorded" | "changes-requested" | "dispute-recorded"
+export type EventType =
+  | "project-created"
+  | "customer-invited"
+  | "customer-approver-joined"
+  | "agreement-accepted"
+  | "agreement-sent"
+  | "evidence-submitted"
+  | "milestone-approved"
+  | "variation-approved"
+  | "decision-recorded"
+  | "changes-requested"
+  | "dispute-recorded";
 
 export interface EvidenceItem {
-  id: number
+  id: number;
 
-  name: string
+  name: string;
 
-  type: EvidenceType
+  type: EvidenceType;
 
-  uploadedAt: string
+  uploadedAt: string;
 
-  uploadedBy: string
+  uploadedBy: string;
 }
 
 export interface Milestone {
-  id: number
+  id: number;
 
-  name: string
+  name: string;
 
-  value: number
+  value: number;
 
-  status: MilestoneStatus
+  status: MilestoneStatus;
 
-  completedDate?: string
+  completedDate?: string;
 
-  submittedDate?: string
+  submittedDate?: string;
 
-  submittedBy?: string
+  submittedBy?: string;
 
-  deadline?: string
+  deadline?: string;
 
-  criteria?: string[]
+  criteria?: string[];
 
-  requiredEvidence?: string[]
+  requiredEvidence?: string[];
 
-  submittedEvidence?: EvidenceItem[]
+  submittedEvidence?: EvidenceItem[];
 }
 
 export interface ActivityEvent {
-  id: number | string
+  id: number | string;
 
-  actor: string
+  actor: string;
 
-  actorType: ActorType
+  actorType: ActorType;
 
-  timestamp: string
+  timestamp: string;
 
-  project: string
+  project: string;
 
-  milestone?: string
+  milestone?: string;
 
-  description: string
+  description: string;
 
-  event: EventType
+  event: EventType;
 }
 
 export interface ProjectRecord {
-  id: string
-  name: string
-  customer: string
-  sme: string
-  agreedValue: number
-  approvedValue: number
-  outstandingValue: number
-  status: string
-  agreementVersion: string
-  agreementStatus: "draft" | "active"
-  agreementTitle?: string
-  agreementScope?: string
-  agreementTerms?: string
-  agreementAccepted: string
-  authorizedApprover: string
-  milestones: Milestone[]
+  id: string;
+  name: string;
+  customer: string;
+  sme: string;
+  agreedValue: number;
+  approvedValue: number;
+  outstandingValue: number;
+  status: string;
+  agreementVersion: string;
+  agreementStatus: "draft" | "active";
+  agreementTitle?: string;
+  agreementScope?: string;
+  agreementTerms?: string;
+  agreementAccepted: string;
+  authorizedApprover: string;
+  milestones: Milestone[];
   variations: Array<{
-    id: string
-    description: string
-    approvedDate: string
-    valueChange: string | null
-  }>
+    id: string;
+    description: string;
+    approvedDate: string;
+    valueChange: string | null;
+  }>;
 }
 
 const MILESTONE_2: Milestone = {
@@ -162,7 +178,7 @@ const MILESTONE_2: Milestone = {
       uploadedBy: "Nadia Rahman",
     },
   ],
-}
+};
 
 export const PROJECT: ProjectRecord = {
   id: "cafe-renovation",
@@ -225,9 +241,9 @@ export const PROJECT: ProjectRecord = {
       valueChange: null,
     },
   ],
-}
+};
 
-export const MILESTONE_2_DATA = MILESTONE_2
+export const MILESTONE_2_DATA = MILESTONE_2;
 
 export const ACTIVITY_LOG: ActivityEvent[] = [
   {
@@ -237,8 +253,7 @@ export const ACTIVITY_LOG: ActivityEvent[] = [
     timestamp: "20 Aug 2026, 9:25 AM GST",
     project: "Café Renovation",
     milestone: "Milestone 2",
-    description:
-      "Evidence submitted for Milestone 2 — 4 items uploaded for customer review",
+    description: "Evidence submitted for Milestone 2 — 4 items uploaded for customer review",
     event: "evidence-submitted",
   },
   {
@@ -280,8 +295,8 @@ export const ACTIVITY_LOG: ActivityEvent[] = [
     description: "Agreement v1.2 sent to Cedar Café for acceptance",
     event: "agreement-sent",
   },
-]
+];
 
 export function fmt(n: number): string {
-  return `AED ${n.toLocaleString()}`
+  return `AED ${n.toLocaleString()}`;
 }

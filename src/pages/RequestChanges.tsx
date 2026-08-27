@@ -1,10 +1,10 @@
-import { useState } from "react"
+import { useState } from "react";
 
-import { useTrustPay } from "@/state/TrustPayContext"
-import type { PageProps } from "@/types"
+import { useTrustPay } from "@/state/TrustPayContext";
+import type { PageProps } from "@/types";
 
 const CARD =
-  "bg-card rounded-2xl border border-edge shadow-[0_2px_12px_rgba(13,31,64,0.06),0_1px_3px_rgba(13,31,64,0.04)]"
+  "bg-card rounded-2xl border border-edge shadow-[0_2px_12px_rgba(13,31,64,0.06),0_1px_3px_rgba(13,31,64,0.04)]";
 
 const REASONS = [
   "Work does not meet acceptance criteria",
@@ -16,21 +16,21 @@ const REASONS = [
   "Quality does not match agreement",
 
   "Other",
-]
+];
 
 export default function RequestChanges({ navigate }: PageProps) {
-  const [submitted, setSubmitted] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [reason, setReason] = useState("Evidence is incomplete or unclear")
+  const [reason, setReason] = useState("Evidence is incomplete or unclear");
 
   const [comment, setComment] = useState(
     "Please relocate the two outlet boxes beside the service counter and upload close-up evidence after correction.",
-  )
+  );
 
-  const [responseDate, setResponseDate] = useState("2026-08-30")
-  const { project: PROJECT, requestChanges, lastDecision } = useTrustPay()
-  const m = PROJECT.milestones[1]
+  const [responseDate, setResponseDate] = useState("2026-08-30");
+  const { project: PROJECT, requestChanges, lastDecision } = useTrustPay();
+  const m = PROJECT.milestones[1];
 
   if (submitted) {
     return (
@@ -50,23 +50,13 @@ export default function RequestChanges({ navigate }: PageProps) {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
-              <path
-                d="M22 10l-6 6"
-                stroke="white"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              />
+              <path d="M22 10l-6 6" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
             </svg>
           </div>
-          <h1
-            style={{ fontFamily: "var(--font-display)" }}
-            className="text-3xl font-bold text-ink"
-          >
+          <h1 style={{ fontFamily: "var(--font-display)" }} className="text-3xl font-bold text-ink">
             Changes requested
           </h1>
-          <p className="text-muted text-base mt-2">
-            Your change request has been recorded.
-          </p>
+          <p className="text-muted text-base mt-2">Your change request has been recorded.</p>
         </div>
 
         <div className={`${CARD} p-6`}>
@@ -102,9 +92,7 @@ export default function RequestChanges({ navigate }: PageProps) {
         </div>
 
         <div className="rounded-2xl bg-warn-light border border-warn/30 p-5">
-          <p className="text-sm font-semibold text-warn mb-2">
-            What happens next
-          </p>
+          <p className="text-sm font-semibold text-warn mb-2">What happens next</p>
           <ul className="space-y-1.5 text-sm text-ink-dim">
             <li className="flex items-start gap-2">
               <span className="text-warn mt-0.5">&#8250;</span>
@@ -112,13 +100,11 @@ export default function RequestChanges({ navigate }: PageProps) {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-warn mt-0.5">&#8250;</span>
-              They must resubmit evidence by{" "}
-              <strong className="text-ink">30 August 2026</strong>.
+              They must resubmit evidence by <strong className="text-ink">30 August 2026</strong>.
             </li>
             <li className="flex items-start gap-2">
               <span className="text-warn mt-0.5">&#8250;</span>
-              You will receive a notification when updated evidence is available
-              for review.
+              You will receive a notification when updated evidence is available for review.
             </li>
           </ul>
         </div>
@@ -131,11 +117,10 @@ export default function RequestChanges({ navigate }: PageProps) {
         </button>
 
         <p className="text-xs text-muted text-center">
-          TrustPay records agreements, evidence, and decisions. It does not hold
-          or transfer money.
+          TrustPay records agreements, evidence, and decisions. It does not hold or transfer money.
         </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -147,13 +132,7 @@ export default function RequestChanges({ navigate }: PageProps) {
           className="mt-1 p-2 rounded-xl hover:bg-edge/60 transition-all text-muted hover:text-ink flex-shrink-0"
           aria-label="Go back to milestone review"
         >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 18 18"
-            fill="none"
-            aria-hidden="true"
-          >
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
             <path
               d="M11 4L6 9L11 14"
               stroke="currentColor"
@@ -164,10 +143,7 @@ export default function RequestChanges({ navigate }: PageProps) {
           </svg>
         </button>
         <div>
-          <h1
-            style={{ fontFamily: "var(--font-display)" }}
-            className="text-2xl font-bold text-ink"
-          >
+          <h1 style={{ fontFamily: "var(--font-display)" }} className="text-2xl font-bold text-ink">
             Request Changes
           </h1>
           <p className="text-muted text-sm mt-1">
@@ -180,10 +156,7 @@ export default function RequestChanges({ navigate }: PageProps) {
       <div className={`${CARD} p-6 space-y-5`}>
         {/* Reason category */}
         <div>
-          <label
-            className="block text-sm font-medium text-ink mb-2"
-            htmlFor="reason"
-          >
+          <label className="block text-sm font-medium text-ink mb-2" htmlFor="reason">
             Reason for change request <span className="text-danger">*</span>
           </label>
           <select
@@ -202,10 +175,7 @@ export default function RequestChanges({ navigate }: PageProps) {
 
         {/* Required changes */}
         <div>
-          <label
-            className="block text-sm font-medium text-ink mb-2"
-            htmlFor="comment"
-          >
+          <label className="block text-sm font-medium text-ink mb-2" htmlFor="comment">
             Required changes <span className="text-danger">*</span>
           </label>
           <textarea
@@ -217,25 +187,17 @@ export default function RequestChanges({ navigate }: PageProps) {
             placeholder="Describe the specific changes required..."
           />
           <p className="text-xs text-muted mt-1.5">
-            Be specific. Alba Fit-Out will use this to address the issues and
-            resubmit.
+            Be specific. Alba Fit-Out will use this to address the issues and resubmit.
           </p>
         </div>
 
         {/* Supporting attachment */}
         <div>
           <label className="block text-sm font-medium text-ink mb-2">
-            Supporting attachment{" "}
-            <span className="text-muted font-normal">(optional)</span>
+            Supporting attachment <span className="text-muted font-normal">(optional)</span>
           </label>
           <div className="border-2 border-dashed border-edge rounded-xl p-6 flex flex-col items-center justify-center gap-2 hover:border-brand/40 hover:bg-edge/20 transition-all cursor-pointer">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-            >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path
                 d="M12 16V8M8 12l4-4 4 4"
                 stroke="#7A7870"
@@ -251,8 +213,7 @@ export default function RequestChanges({ navigate }: PageProps) {
               />
             </svg>
             <p className="text-sm text-muted">
-              Drop a file here or{" "}
-              <span className="text-brand font-medium">browse</span>
+              Drop a file here or <span className="text-brand font-medium">browse</span>
             </p>
             <p className="text-xs text-muted">PDF, images, or documents</p>
           </div>
@@ -260,10 +221,7 @@ export default function RequestChanges({ navigate }: PageProps) {
 
         {/* Requested response date */}
         <div>
-          <label
-            className="block text-sm font-medium text-ink mb-2"
-            htmlFor="response-date"
-          >
+          <label className="block text-sm font-medium text-ink mb-2" htmlFor="response-date">
             Requested response date <span className="text-danger">*</span>
           </label>
           <input
@@ -287,22 +245,16 @@ export default function RequestChanges({ navigate }: PageProps) {
         </button>
         <button
           onClick={async () => {
-            if (
-              reason.trim() &&
-              comment.trim() &&
-              responseDate
-            ) {
-              setIsSubmitting(true)
+            if (reason.trim() && comment.trim() && responseDate) {
+              setIsSubmitting(true);
               if (await requestChanges(m.id, { reason, comment, responseDate })) {
-                setSubmitted(true)
+                setSubmitted(true);
               } else {
-                setIsSubmitting(false)
+                setIsSubmitting(false);
               }
             }
           }}
-          disabled={
-            isSubmitting || !reason.trim() || !comment.trim() || !responseDate
-          }
+          disabled={isSubmitting || !reason.trim() || !comment.trim() || !responseDate}
           className="flex-1 px-5 py-3 bg-warn text-white text-sm font-semibold rounded-xl hover:bg-warn/90 active:scale-[0.99] transition-all focus-visible:ring-2 focus-visible:ring-warn focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? "Recording request…" : "Submit change request"}
@@ -310,9 +262,8 @@ export default function RequestChanges({ navigate }: PageProps) {
       </div>
 
       <p className="text-xs text-muted text-center">
-        TrustPay records agreements, evidence, and decisions. It does not hold
-        or transfer money.
+        TrustPay records agreements, evidence, and decisions. It does not hold or transfer money.
       </p>
     </div>
-  )
+  );
 }

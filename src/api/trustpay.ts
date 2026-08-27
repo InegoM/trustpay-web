@@ -5,94 +5,92 @@ import {
   type Milestone,
   type MilestoneStatus,
   type ProjectRecord,
-} from "@/data/mock"
+} from "@/data/mock";
 
-const API_BASE_URL = (
-  import.meta.env.VITE_API_URL ?? "http://localhost:3001"
-).replace(/\/$/, "")
+const API_BASE_URL = (import.meta.env.VITE_API_URL ?? "http://localhost:3001").replace(/\/$/, "");
 
 interface ApiEnvelope<T> {
-  data: T
+  data: T;
 }
 
 interface ApiErrorEnvelope {
-  error?: { code?: string; message?: string }
+  error?: { code?: string; message?: string };
 }
 
 export interface ApiMilestone {
-  id: number
-  name: string
-  value: number
-  status: MilestoneStatus
-  description?: string
-  acceptanceCriteria?: string[]
-  submittedBy?: string
-  submittedAt?: string
-  responseDeadline?: string
-  completedAt?: string
+  id: number;
+  name: string;
+  value: number;
+  status: MilestoneStatus;
+  description?: string;
+  acceptanceCriteria?: string[];
+  submittedBy?: string;
+  submittedAt?: string;
+  responseDeadline?: string;
+  completedAt?: string;
 }
 
 export interface ApiProject {
-  id: string
-  name: string
-  customer: string
-  sme: string
-  agreedValue: number
-  approvedValue: number
-  outstandingValue: number
-  status: "in-progress" | "completed" | "on-hold"
-  agreementVersion: string
-  agreementStatus: "draft" | "active"
-  agreementTitle?: string
-  agreementScope?: string
-  agreementTerms?: string
-  agreementAcceptedAt?: string
-  authorizedApprover: string
-  milestones: ApiMilestone[]
+  id: string;
+  name: string;
+  customer: string;
+  sme: string;
+  agreedValue: number;
+  approvedValue: number;
+  outstandingValue: number;
+  status: "in-progress" | "completed" | "on-hold";
+  agreementVersion: string;
+  agreementStatus: "draft" | "active";
+  agreementTitle?: string;
+  agreementScope?: string;
+  agreementTerms?: string;
+  agreementAcceptedAt?: string;
+  authorizedApprover: string;
+  milestones: ApiMilestone[];
 }
 
 export interface CreateProjectInput {
-  name: string
-  code: string
-  customerName: string
-  currencyCode: string
+  name: string;
+  code: string;
+  customerName: string;
+  currencyCode: string;
   agreement: {
-    title: string
-    scope: string
-    terms: string
-  }
+    title: string;
+    scope: string;
+    terms: string;
+  };
   milestones: Array<{
-    name: string
-    description?: string
-    value: number
-    acceptanceCriteria: string[]
-  }>
+    name: string;
+    description?: string;
+    value: number;
+    acceptanceCriteria: string[];
+  }>;
 }
 
 export interface ApiProjectInvitation {
-  id: string
-  projectId: string
-  email: string
-  role: "APPROVER"
-  status: "pending" | "accepted" | "expired" | "revoked"
-  invitedBy: string
-  expiresAt: string
-  createdAt: string
+  id: string;
+  projectId: string;
+  email: string;
+  role: "APPROVER";
+  status: "pending" | "accepted" | "expired" | "revoked";
+  invitedBy: string;
+  expiresAt: string;
+  createdAt: string;
 }
 
 export interface CreatedProjectInvitation {
-  invitation: ApiProjectInvitation
-  token: string
+  invitation: ApiProjectInvitation;
+  token: string;
 }
 
 export interface ApiActivityEvent {
-  id: string
-  projectId: string
-  milestoneId?: number
-  actor: string
-  actorType: "sme" | "customer" | "system"
-  occurredAt: string
-  description: string
+  id: string;
+  projectId: string;
+  milestoneId?: number;
+  actor: string;
+  actorType: "sme" | "customer" | "system";
+  occurredAt: string;
+  description: string;
   type:
     | "project-created"
     | "customer-invited"
@@ -102,28 +100,28 @@ export interface ApiActivityEvent {
     | "evidence-submitted"
     | "changes-requested"
     | "dispute-recorded"
-    | "decision-recorded"
-  reference?: string
+    | "decision-recorded";
+  reference?: string;
 }
 
 export type DecisionInput =
   | { action: "approve" }
   | {
-      action: "request-changes"
-      reason: string
-      comment: string
-      responseDate: string
+      action: "request-changes";
+      reason: string;
+      comment: string;
+      responseDate: string;
     }
   | {
-      action: "raise-dispute"
-      reason: string
-      explanation: string
-    }
+      action: "raise-dispute";
+      reason: string;
+      explanation: string;
+    };
 
 interface DecisionResult {
-  project: ApiProject
-  milestone: ApiMilestone
-  events: ApiActivityEvent[]
+  project: ApiProject;
+  milestone: ApiMilestone;
+  events: ApiActivityEvent[];
 }
 
 export class TrustPayApiError extends Error {
@@ -132,13 +130,13 @@ export class TrustPayApiError extends Error {
     readonly status: number,
     readonly code: string,
   ) {
-    super(message)
-    this.name = "TrustPayApiError"
+    super(message);
+    this.name = "TrustPayApiError";
   }
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  let response: Response
+  let response: Response;
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       ...init,
@@ -147,102 +145,98 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
         "Content-Type": "application/json",
         ...init?.headers,
       },
-    })
+    });
   } catch {
     throw new TrustPayApiError(
       "Cannot reach the TrustPay API. Start trustpay-api on port 3001.",
       0,
       "API_UNAVAILABLE",
-    )
+    );
   }
 
-  const body = (await response.json().catch(() => ({}))) as
-    | ApiEnvelope<T>
-    | ApiErrorEnvelope
+  const body = (await response.json().catch(() => ({}))) as ApiEnvelope<T> | ApiErrorEnvelope;
   if (!response.ok) {
-    const error = "error" in body ? body.error : undefined
+    const error = "error" in body ? body.error : undefined;
     throw new TrustPayApiError(
       error?.message ?? `The API returned status ${response.status}`,
       response.status,
       error?.code ?? "API_ERROR",
-    )
+    );
   }
 
-  return (body as ApiEnvelope<T>).data
+  return (body as ApiEnvelope<T>).data;
 }
 
 export interface AuthOrganization {
-  id: string
-  name: string
-  type: "SME" | "CUSTOMER" | "SUPPLIER" | "BANK_PARTNER"
-  role: "OWNER" | "ADMIN" | "APPROVER" | "MEMBER"
+  id: string;
+  name: string;
+  type: "SME" | "CUSTOMER" | "SUPPLIER" | "BANK_PARTNER";
+  role: "OWNER" | "ADMIN" | "APPROVER" | "MEMBER";
 }
 
 export interface AuthUser {
-  id: string
-  email: string
-  displayName: string
-  organizations: AuthOrganization[]
+  id: string;
+  email: string;
+  displayName: string;
+  organizations: AuthOrganization[];
 }
 
 export function login(email: string, password: string): Promise<AuthUser> {
   return request("/api/v1/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
-  })
+  });
 }
 
 export async function logout(): Promise<void> {
-  let response: Response
+  let response: Response;
   try {
     response = await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: "{}",
-    })
+    });
   } catch {
-    throw new TrustPayApiError("Cannot reach the TrustPay API.", 0, "API_UNAVAILABLE")
+    throw new TrustPayApiError("Cannot reach the TrustPay API.", 0, "API_UNAVAILABLE");
   }
   if (!response.ok && response.status !== 204) {
-    throw new TrustPayApiError("Could not sign out.", response.status, "LOGOUT_FAILED")
+    throw new TrustPayApiError("Could not sign out.", response.status, "LOGOUT_FAILED");
   }
 }
 
 export function getCurrentUser(): Promise<AuthUser> {
-  return request("/api/v1/me")
+  return request("/api/v1/me");
 }
 
 export function acceptInvitation(input: {
-  token: string
-  displayName: string
-  password: string
+  token: string;
+  displayName: string;
+  password: string;
 }): Promise<AuthUser> {
   return request("/api/v1/invitations/accept", {
     method: "POST",
     body: JSON.stringify(input),
-  })
+  });
 }
 
 export function getProject(projectId: string): Promise<ApiProject> {
-  return request(`/api/v1/projects/${encodeURIComponent(projectId)}`)
+  return request(`/api/v1/projects/${encodeURIComponent(projectId)}`);
 }
 
 export function listProjects(): Promise<ApiProject[]> {
-  return request("/api/v1/projects")
+  return request("/api/v1/projects");
 }
 
 export function createProject(input: CreateProjectInput): Promise<ApiProject> {
   return request("/api/v1/projects", {
     method: "POST",
     body: JSON.stringify(input),
-  })
+  });
 }
 
-export function listProjectInvitations(
-  projectId: string,
-): Promise<ApiProjectInvitation[]> {
-  return request(`/api/v1/projects/${encodeURIComponent(projectId)}/invitations`)
+export function listProjectInvitations(projectId: string): Promise<ApiProjectInvitation[]> {
+  return request(`/api/v1/projects/${encodeURIComponent(projectId)}/invitations`);
 }
 
 export function createCustomerInvitation(
@@ -252,11 +246,11 @@ export function createCustomerInvitation(
   return request(`/api/v1/projects/${encodeURIComponent(projectId)}/invitations`, {
     method: "POST",
     body: JSON.stringify({ email }),
-  })
+  });
 }
 
 export function getProjectActivity(projectId: string): Promise<ApiActivityEvent[]> {
-  return request(`/api/v1/projects/${encodeURIComponent(projectId)}/activity`)
+  return request(`/api/v1/projects/${encodeURIComponent(projectId)}/activity`);
 }
 
 export function recordDecision(
@@ -267,23 +261,21 @@ export function recordDecision(
   return request(
     `/api/v1/projects/${encodeURIComponent(projectId)}/milestones/${milestoneId}/decisions`,
     { method: "POST", body: JSON.stringify(decision) },
-  )
+  );
 }
 
 function formatDate(value?: string, includeTime = false): string | undefined {
-  if (!value) return undefined
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
+  if (!value) return undefined;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
   const formatted = new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
     month: "long",
     year: "numeric",
-    ...(includeTime
-      ? { hour: "numeric", minute: "2-digit", hour12: true }
-      : {}),
+    ...(includeTime ? { hour: "numeric", minute: "2-digit", hour12: true } : {}),
     timeZone: "Asia/Dubai",
-  }).format(date)
-  return includeTime ? `${formatted} GST` : formatted
+  }).format(date);
+  return includeTime ? `${formatted} GST` : formatted;
 }
 
 function mergeMilestone(api: ApiMilestone, current?: Milestone): Milestone {
@@ -295,13 +287,11 @@ function mergeMilestone(api: ApiMilestone, current?: Milestone): Milestone {
     ...(api.completedAt ? { completedDate: formatDate(api.completedAt) } : {}),
     ...(api.submittedAt ? { submittedDate: formatDate(api.submittedAt) } : {}),
     ...(api.submittedBy ? { submittedBy: api.submittedBy } : {}),
-    ...(api.responseDeadline
-      ? { deadline: formatDate(api.responseDeadline, true) }
-      : {}),
+    ...(api.responseDeadline ? { deadline: formatDate(api.responseDeadline, true) } : {}),
     criteria: api.acceptanceCriteria ?? current?.criteria ?? [],
     requiredEvidence: current?.requiredEvidence ?? [],
     submittedEvidence: current?.submittedEvidence ?? [],
-  }
+  };
 }
 
 export function projectFromApi(
@@ -338,13 +328,10 @@ export function projectFromApi(
       ),
     ),
     variations: current.id === api.id ? current.variations : [],
-  }
+  };
 }
 
-export function activityFromApi(
-  api: ApiActivityEvent,
-  projectName: string,
-): ActivityEvent {
+export function activityFromApi(api: ApiActivityEvent, projectName: string): ActivityEvent {
   return {
     id: api.id,
     actor: api.actor,
@@ -354,5 +341,5 @@ export function activityFromApi(
     ...(api.milestoneId ? { milestone: `Milestone ${api.milestoneId}` } : {}),
     description: api.description,
     event: api.type as EventType,
-  }
+  };
 }

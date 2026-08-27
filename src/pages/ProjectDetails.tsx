@@ -1,10 +1,10 @@
-import { fmt } from "@/data/mock"
-import { useTrustPay } from "@/state/TrustPayContext"
-import { useAuth } from "@/state/AuthContext"
-import type { PageProps } from "@/types"
+import { fmt } from "@/data/mock";
+import { useTrustPay } from "@/state/TrustPayContext";
+import { useAuth } from "@/state/AuthContext";
+import type { PageProps } from "@/types";
 
 const CARD =
-  "bg-card rounded-2xl border border-edge shadow-[0_2px_12px_rgba(13,31,64,0.06),0_1px_3px_rgba(13,31,64,0.04)]"
+  "bg-card rounded-2xl border border-edge shadow-[0_2px_12px_rgba(13,31,64,0.06),0_1px_3px_rgba(13,31,64,0.04)]";
 
 const milestoneStatusLabel: Record<string, string> = {
   approved: "Approved",
@@ -12,7 +12,7 @@ const milestoneStatusLabel: Record<string, string> = {
   "changes-requested": "Changes requested",
   disputed: "Disputed",
   "not-started": "Not started",
-}
+};
 
 const milestoneStatusStyle: Record<string, string> = {
   approved: "bg-brand-light text-brand",
@@ -20,11 +20,11 @@ const milestoneStatusStyle: Record<string, string> = {
   "changes-requested": "bg-warn-light text-warn",
   disputed: "bg-danger-light text-danger",
   "not-started": "bg-edge text-muted",
-}
+};
 
 export default function ProjectDetails({ navigate }: PageProps) {
-  const { project: PROJECT, activity: ACTIVITY_LOG } = useTrustPay()
-  const { canCreateProject } = useAuth()
+  const { project: PROJECT, activity: ACTIVITY_LOG } = useTrustPay();
+  const { canCreateProject } = useAuth();
 
   return (
     <div className="space-y-6">
@@ -36,13 +36,7 @@ export default function ProjectDetails({ navigate }: PageProps) {
             className="mt-1 p-2 rounded-xl hover:bg-edge/60 transition-all text-muted hover:text-ink flex-shrink-0"
             aria-label="Back to projects"
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              fill="none"
-              aria-hidden="true"
-            >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
               <path
                 d="M11 4L6 9L11 14"
                 stroke="currentColor"
@@ -65,9 +59,8 @@ export default function ProjectDetails({ navigate }: PageProps) {
               </span>
             </div>
             <p className="text-muted text-sm mt-1">
-              {PROJECT.customer} &middot; Authorized approver:{" "}
-              {PROJECT.authorizedApprover} &middot; Agreement{" "}
-              {PROJECT.agreementVersion}{" "}
+              {PROJECT.customer} &middot; Authorized approver: {PROJECT.authorizedApprover} &middot;
+              Agreement {PROJECT.agreementVersion}{" "}
               {PROJECT.agreementStatus === "active"
                 ? `accepted ${PROJECT.agreementAccepted}`
                 : "saved as draft"}
@@ -109,9 +102,7 @@ export default function ProjectDetails({ navigate }: PageProps) {
           },
         ].map((t) => (
           <div key={t.label} className={`${CARD} p-5`}>
-            <p className="text-muted text-xs font-medium uppercase tracking-wider">
-              {t.label}
-            </p>
+            <p className="text-muted text-xs font-medium uppercase tracking-wider">{t.label}</p>
             <p
               style={{ fontFamily: "var(--font-display)" }}
               className={`text-2xl font-bold mt-3 ${t.color}`}
@@ -136,10 +127,7 @@ export default function ProjectDetails({ navigate }: PageProps) {
 
           <div className="relative">
             {/* Vertical connector line */}
-            <div
-              className="absolute left-4 top-8 bottom-8 w-0.5 bg-edge"
-              aria-hidden="true"
-            />
+            <div className="absolute left-4 top-8 bottom-8 w-0.5 bg-edge" aria-hidden="true" />
 
             <div className="space-y-6">
               {PROJECT.milestones.map((m, i) => (
@@ -149,8 +137,7 @@ export default function ProjectDetails({ navigate }: PageProps) {
                     className={`relative z-10 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${
                       m.status === "approved"
                         ? "bg-brand"
-                        : m.status === "awaiting-decision" ||
-                            m.status === "changes-requested"
+                        : m.status === "awaiting-decision" || m.status === "changes-requested"
                           ? "bg-warn"
                           : m.status === "disputed"
                             ? "bg-danger"
@@ -159,12 +146,7 @@ export default function ProjectDetails({ navigate }: PageProps) {
                     aria-hidden="true"
                   >
                     {m.status === "approved" ? (
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 14 14"
-                        fill="none"
-                      >
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                         <path
                           d="M2.5 7L5.5 10L11.5 4"
                           stroke="white"
@@ -174,19 +156,8 @@ export default function ProjectDetails({ navigate }: PageProps) {
                         />
                       </svg>
                     ) : m.status !== "not-started" ? (
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 14 14"
-                        fill="none"
-                      >
-                        <circle
-                          cx="7"
-                          cy="7"
-                          r="5.5"
-                          stroke="white"
-                          strokeWidth="1.5"
-                        />
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <circle cx="7" cy="7" r="5.5" stroke="white" strokeWidth="1.5" />
                         <path
                           d="M7 4.5V7L9 8.5"
                           stroke="white"
@@ -201,9 +172,7 @@ export default function ProjectDetails({ navigate }: PageProps) {
 
                   {/* Milestone content */}
                   <div
-                    className={`flex-1 pb-6 ${
-                      i === PROJECT.milestones.length - 1 ? "pb-0" : ""
-                    }`}
+                    className={`flex-1 pb-6 ${i === PROJECT.milestones.length - 1 ? "pb-0" : ""}`}
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
@@ -227,20 +196,15 @@ export default function ProjectDetails({ navigate }: PageProps) {
                           {fmt(m.value)}
                         </p>
                         {m.status === "approved" && m.completedDate && (
-                          <p className="text-xs text-muted mt-1">
-                            Approved {m.completedDate}
-                          </p>
+                          <p className="text-xs text-muted mt-1">Approved {m.completedDate}</p>
                         )}
                         {m.status === "awaiting-decision" && (
                           <p className="text-xs text-warn mt-1">
-                            Evidence submitted {m.submittedDate} &middot;
-                            Response due {m.deadline}
+                            Evidence submitted {m.submittedDate} &middot; Response due {m.deadline}
                           </p>
                         )}
                         {m.status === "not-started" && (
-                          <p className="text-xs text-muted mt-1">
-                            Pending previous milestone
-                          </p>
+                          <p className="text-xs text-muted mt-1">Pending previous milestone</p>
                         )}
                         {m.status === "changes-requested" && (
                           <p className="text-xs text-warn mt-1">
@@ -254,8 +218,7 @@ export default function ProjectDetails({ navigate }: PageProps) {
                         )}
                       </div>
 
-                      {(m.status === "awaiting-decision" ||
-                        m.status === "changes-requested") && (
+                      {(m.status === "awaiting-decision" || m.status === "changes-requested") && (
                         <button
                           onClick={() => navigate("milestone-review")}
                           className="flex-shrink-0 px-3.5 py-2 bg-brand text-white text-xs font-medium rounded-xl hover:bg-brand/90 transition-all"
@@ -301,14 +264,9 @@ export default function ProjectDetails({ navigate }: PageProps) {
 
                 { label: "Approver", value: PROJECT.authorizedApprover },
               ].map((row) => (
-                <div
-                  key={row.label}
-                  className="flex justify-between gap-2 text-sm"
-                >
+                <div key={row.label} className="flex justify-between gap-2 text-sm">
                   <span className="text-muted">{row.label}</span>
-                  <span className="text-ink font-medium text-right">
-                    {row.value}
-                  </span>
+                  <span className="text-ink font-medium text-right">{row.value}</span>
                 </div>
               ))}
             </div>
@@ -320,13 +278,17 @@ export default function ProjectDetails({ navigate }: PageProps) {
                 {PROJECT.agreementScope && (
                   <div className="mt-3">
                     <p className="text-xs font-semibold text-muted">Scope</p>
-                    <p className="mt-1 text-xs leading-relaxed text-ink-dim">{PROJECT.agreementScope}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-ink-dim">
+                      {PROJECT.agreementScope}
+                    </p>
                   </div>
                 )}
                 {PROJECT.agreementTerms && (
                   <div className="mt-3">
                     <p className="text-xs font-semibold text-muted">Decision terms</p>
-                    <p className="mt-1 text-xs leading-relaxed text-ink-dim">{PROJECT.agreementTerms}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-ink-dim">
+                      {PROJECT.agreementTerms}
+                    </p>
                   </div>
                 )}
               </div>
@@ -342,29 +304,23 @@ export default function ProjectDetails({ navigate }: PageProps) {
               Variations
             </h3>
             {PROJECT.variations.map((v) => (
-              <div
-                key={v.id}
-                className="rounded-xl bg-brand-light border border-brand-mid p-3"
-              >
+              <div key={v.id} className="rounded-xl bg-brand-light border border-brand-mid p-3">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="text-xs font-medium text-brand">
-                    Variation {v.id}
-                  </p>
+                  <p className="text-xs font-medium text-brand">Variation {v.id}</p>
                   <span className="text-xs text-brand-mid font-medium bg-brand text-white rounded-full px-2 py-0.5">
                     Approved
                   </span>
                 </div>
-                <p className="text-xs text-ink-dim mt-1.5 leading-snug">
-                  {v.description}
-                </p>
+                <p className="text-xs text-ink-dim mt-1.5 leading-snug">{v.description}</p>
                 <p className="text-xs text-muted mt-1">
-                  {v.approvedDate} &middot;{" "}
-                  {v.valueChange ?? "No change to project value"}
+                  {v.approvedDate} &middot; {v.valueChange ?? "No change to project value"}
                 </p>
               </div>
             ))}
             {PROJECT.variations.length === 0 && (
-              <p className="text-xs leading-relaxed text-muted">No variations have been recorded.</p>
+              <p className="text-xs leading-relaxed text-muted">
+                No variations have been recorded.
+              </p>
             )}
           </div>
 
@@ -390,9 +346,7 @@ export default function ProjectDetails({ navigate }: PageProps) {
                     aria-hidden="true"
                   />
                   <div>
-                    <p className="text-xs text-ink leading-snug">
-                      {e.description}
-                    </p>
+                    <p className="text-xs text-ink leading-snug">{e.description}</p>
                     <p className="text-xs text-muted mt-0.5">{e.timestamp}</p>
                   </div>
                 </div>
@@ -410,9 +364,8 @@ export default function ProjectDetails({ navigate }: PageProps) {
 
       {/* Disclaimer */}
       <p className="text-xs text-muted text-center pt-2">
-        TrustPay records agreements, evidence, and decisions. It does not hold
-        or transfer money.
+        TrustPay records agreements, evidence, and decisions. It does not hold or transfer money.
       </p>
     </div>
-  )
+  );
 }

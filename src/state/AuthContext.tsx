@@ -6,7 +6,7 @@ import {
   useEffect,
   useMemo,
   useState,
-} from "react"
+} from "react";
 
 import {
   acceptInvitation as acceptInvitationRequest,
@@ -15,101 +15,107 @@ import {
   logout as logoutRequest,
   TrustPayApiError,
   type AuthUser,
-} from "@/api/trustpay"
+} from "@/api/trustpay";
 
-type AuthStatus = "loading" | "authenticated" | "anonymous"
+type AuthStatus = "loading" | "authenticated" | "anonymous";
 
 interface AuthState {
-  user: AuthUser | null
-  status: AuthStatus
-  error: string | null
-  canDecide: boolean
-  canCreateProject: boolean
-  login: (email: string, password: string) => Promise<boolean>
-  logout: () => Promise<void>
+  user: AuthUser | null;
+  status: AuthStatus;
+  error: string | null;
+  canDecide: boolean;
+  canCreateProject: boolean;
+  login: (email: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
   acceptInvitation: (input: {
-    token: string
-    displayName: string
-    password: string
-  }) => Promise<boolean>
-  clearError: () => void
+    token: string;
+    displayName: string;
+    password: string;
+  }) => Promise<boolean>;
+  clearError: () => void;
 }
 
-const AuthContext = createContext<AuthState | null>(null)
+const AuthContext = createContext<AuthState | null>(null);
 
 export default function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null)
-  const [status, setStatus] = useState<AuthStatus>("loading")
-  const [error, setError] = useState<string | null>(null)
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [status, setStatus] = useState<AuthStatus>("loading");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     void getCurrentUser()
       .then((currentUser) => {
-        setUser(currentUser)
-        setStatus("authenticated")
+        setUser(currentUser);
+        setStatus("authenticated");
       })
       .catch((requestError) => {
-        setUser(null)
-        setStatus("anonymous")
+        setUser(null);
+        setStatus("anonymous");
         if (!(requestError instanceof TrustPayApiError && requestError.status === 401)) {
-          setError(requestError instanceof Error ? requestError.message : "Unable to check your session.")
+          setError(
+            requestError instanceof Error ? requestError.message : "Unable to check your session.",
+          );
         }
-      })
-  }, [])
+      });
+  }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    setError(null)
+    setError(null);
     try {
-      const currentUser = await loginRequest(email, password)
-      setUser(currentUser)
-      setStatus("authenticated")
-      window.location.hash = "/overview"
-      return true
+      const currentUser = await loginRequest(email, password);
+      setUser(currentUser);
+      setStatus("authenticated");
+      window.location.hash = "/overview";
+      return true;
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Login failed.")
-      return false
+      setError(requestError instanceof Error ? requestError.message : "Login failed.");
+      return false;
     }
-  }, [])
+  }, []);
 
   const logout = useCallback(async () => {
     try {
-      await logoutRequest()
+      await logoutRequest();
     } finally {
-      setUser(null)
-      setStatus("anonymous")
-      window.location.hash = ""
+      setUser(null);
+      setStatus("anonymous");
+      window.location.hash = "";
     }
-  }, [])
+  }, []);
 
   const acceptInvitation = useCallback(
     async (input: { token: string; displayName: string; password: string }) => {
-      setError(null)
+      setError(null);
       try {
-        const currentUser = await acceptInvitationRequest(input)
-        setUser(currentUser)
-        setStatus("authenticated")
-        window.location.hash = "/overview"
-        return true
+        const currentUser = await acceptInvitationRequest(input);
+        setUser(currentUser);
+        setStatus("authenticated");
+        window.location.hash = "/overview";
+        return true;
       } catch (requestError) {
-        setError(requestError instanceof Error ? requestError.message : "Invitation could not be accepted.")
-        return false
+        setError(
+          requestError instanceof Error
+            ? requestError.message
+            : "Invitation could not be accepted.",
+        );
+        return false;
       }
     },
     [],
-  )
+  );
 
   const canDecide =
     user?.organizations.some(
       (organization) =>
         organization.type === "CUSTOMER" &&
         (organization.role === "APPROVER" || organization.role === "OWNER"),
-    ) ?? false
+    ) ?? false;
   const canCreateProject =
     user?.organizations.some(
       (organization) =>
         organization.type === "SME" &&
         (organization.role === "OWNER" || organization.role === "ADMIN"),
-    ) ?? false
+    ) ?? false;
 
   const value = useMemo(
     () => ({
@@ -124,13 +130,13 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       clearError: () => setError(null),
     }),
     [acceptInvitation, canCreateProject, canDecide, error, login, logout, status, user],
-  )
+  );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthState {
-  const context = useContext(AuthContext)
-  if (!context) throw new Error("useAuth must be used inside AuthProvider")
-  return context
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth must be used inside AuthProvider");
+  return context;
 }
