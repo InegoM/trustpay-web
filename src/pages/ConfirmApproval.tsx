@@ -1,17 +1,17 @@
-import { useState } from "react"
+import { useState } from "react";
 
-import { fmt } from "@/data/mock"
-import { useTrustPay } from "@/state/TrustPayContext"
-import type { PageProps } from "@/types"
+import { fmt } from "@/data/mock";
+import { useTrustPay } from "@/state/TrustPayContext";
+import type { PageProps } from "@/types";
 
 const CARD =
-  "bg-card rounded-2xl border border-edge shadow-[0_2px_12px_rgba(13,31,64,0.06),0_1px_3px_rgba(13,31,64,0.04)]"
+  "bg-card rounded-2xl border border-edge shadow-[0_2px_12px_rgba(13,31,64,0.06),0_1px_3px_rgba(13,31,64,0.04)]";
 
 export default function ConfirmApproval({ navigate }: PageProps) {
-  const [checked, setChecked] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const { project: PROJECT, approveMilestone } = useTrustPay()
-  const m = PROJECT.milestones[1]
+  const [checked, setChecked] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { project: PROJECT, approveMilestone } = useTrustPay();
+  const m = PROJECT.milestones[1];
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -22,13 +22,7 @@ export default function ConfirmApproval({ navigate }: PageProps) {
           className="mt-1 p-2 rounded-xl hover:bg-edge/60 transition-all text-muted hover:text-ink flex-shrink-0"
           aria-label="Go back to milestone review"
         >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 18 18"
-            fill="none"
-            aria-hidden="true"
-          >
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
             <path
               d="M11 4L6 9L11 14"
               stroke="currentColor"
@@ -39,10 +33,7 @@ export default function ConfirmApproval({ navigate }: PageProps) {
           </svg>
         </button>
         <div>
-          <h1
-            style={{ fontFamily: "var(--font-display)" }}
-            className="text-2xl font-bold text-ink"
-          >
+          <h1 style={{ fontFamily: "var(--font-display)" }} className="text-2xl font-bold text-ink">
             Confirm Milestone Approval
           </h1>
           <p className="text-muted text-sm mt-1">
@@ -89,15 +80,9 @@ export default function ConfirmApproval({ navigate }: PageProps) {
               <span className="text-muted text-sm">{row.label}</span>
               <span
                 className={`text-sm font-medium text-ink text-right ${
-                  row.label === "Milestone value"
-                    ? "font-semibold text-base"
-                    : ""
+                  row.label === "Milestone value" ? "font-semibold text-base" : ""
                 }`}
-                style={
-                  row.label === "Milestone value"
-                    ? { fontFamily: "var(--font-display)" }
-                    : {}
-                }
+                style={row.label === "Milestone value" ? { fontFamily: "var(--font-display)" } : {}}
               >
                 {row.value}
               </span>
@@ -120,13 +105,7 @@ export default function ConfirmApproval({ navigate }: PageProps) {
               key={ev.id}
               className="flex items-center gap-3 text-sm py-1.5 px-3 rounded-xl bg-edge/40"
             >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                aria-hidden="true"
-              >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                 <path
                   d="M2 7L5 10L12 4"
                   stroke="#2B9B8E"
@@ -136,9 +115,7 @@ export default function ConfirmApproval({ navigate }: PageProps) {
                 />
               </svg>
               <span className="text-ink">{ev.name}</span>
-              <span className="text-muted text-xs ml-auto">
-                {ev.uploadedAt}
-              </span>
+              <span className="text-muted text-xs ml-auto">{ev.uploadedAt}</span>
             </li>
           ))}
         </ul>
@@ -156,43 +133,30 @@ export default function ConfirmApproval({ navigate }: PageProps) {
             aria-hidden="true"
           >
             <circle cx="9" cy="9" r="7" stroke="#2B9B8E" strokeWidth="1.5" />
-            <path
-              d="M9 6v4M9 12.5v.5"
-              stroke="#2B9B8E"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
+            <path d="M9 6v4M9 12.5v.5" stroke="#2B9B8E" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
           <div>
-            <p className="text-sm font-semibold text-brand">
-              What this records
-            </p>
+            <p className="text-sm font-semibold text-brand">What this records</p>
             <p className="text-sm text-ink-dim mt-1 leading-relaxed">
-              Selecting <strong className="text-ink">Confirm approval</strong>{" "}
-              records your decision that{" "}
+              Selecting <strong className="text-ink">Confirm approval</strong> records your decision
+              that{" "}
               <strong className="text-ink">
                 Milestone {m.id}: {m.name}
               </strong>{" "}
-              meets the agreed acceptance criteria. This decision is logged with
-              your identity, the timestamp, and a reference number. Any payment
-              associated with this milestone is handled externally.
+              meets the agreed acceptance criteria. This decision is logged with your identity, the
+              timestamp, and a reference number. Any payment associated with this milestone is
+              handled externally.
             </p>
           </div>
         </div>
       </div>
 
       {/* Checkbox */}
-      <div
-        className={`${CARD} p-5 ${
-          checked ? "border-brand" : ""
-        } transition-all`}
-      >
+      <div className={`${CARD} p-5 ${checked ? "border-brand" : ""} transition-all`}>
         <label className="flex items-start gap-4 cursor-pointer select-none">
           <div
             className={`w-5 h-5 rounded-md border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-all ${
-              checked
-                ? "bg-brand border-brand"
-                : "border-edge hover:border-brand/50"
+              checked ? "bg-brand border-brand" : "border-edge hover:border-brand/50"
             }`}
             aria-hidden="true"
           >
@@ -216,9 +180,8 @@ export default function ConfirmApproval({ navigate }: PageProps) {
             aria-required="true"
           />
           <p className="text-sm text-ink leading-relaxed">
-            I confirm that I am authorized to approve this milestone and that
-            the submitted work meets the agreed acceptance criteria as defined
-            in Agreement {PROJECT.agreementVersion}.
+            I confirm that I am authorized to approve this milestone and that the submitted work
+            meets the agreed acceptance criteria as defined in Agreement {PROJECT.agreementVersion}.
           </p>
         </label>
       </div>
@@ -233,12 +196,12 @@ export default function ConfirmApproval({ navigate }: PageProps) {
         </button>
         <button
           onClick={async () => {
-            if (!checked || isSubmitting) return
-            setIsSubmitting(true)
+            if (!checked || isSubmitting) return;
+            setIsSubmitting(true);
             if (await approveMilestone(m.id)) {
-              navigate("milestone-approved")
+              navigate("milestone-approved");
             } else {
-              setIsSubmitting(false)
+              setIsSubmitting(false);
             }
           }}
           disabled={!checked || isSubmitting}
@@ -254,9 +217,8 @@ export default function ConfirmApproval({ navigate }: PageProps) {
       </div>
 
       <p className="text-xs text-muted text-center">
-        TrustPay records agreements, evidence, and decisions. It does not hold
-        or transfer money.
+        TrustPay records agreements, evidence, and decisions. It does not hold or transfer money.
       </p>
     </div>
-  )
+  );
 }

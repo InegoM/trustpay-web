@@ -1,13 +1,13 @@
-import { fmt } from "@/data/mock"
-import { useTrustPay } from "@/state/TrustPayContext"
-import type { PageProps } from "@/types"
+import { fmt } from "@/data/mock";
+import { useTrustPay } from "@/state/TrustPayContext";
+import type { PageProps } from "@/types";
 
 const CARD =
-  "bg-card rounded-2xl border border-edge shadow-[0_2px_12px_rgba(13,31,64,0.06),0_1px_3px_rgba(13,31,64,0.04)]"
+  "bg-card rounded-2xl border border-edge shadow-[0_2px_12px_rgba(13,31,64,0.06),0_1px_3px_rgba(13,31,64,0.04)]";
 
 export default function MilestoneApproved({ navigate }: PageProps) {
-  const { project: PROJECT, lastDecision } = useTrustPay()
-  const m = PROJECT.milestones[1]
+  const { project: PROJECT, lastDecision } = useTrustPay();
+  const m = PROJECT.milestones[1];
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -28,15 +28,10 @@ export default function MilestoneApproved({ navigate }: PageProps) {
             />
           </svg>
         </div>
-        <h1
-          style={{ fontFamily: "var(--font-display)" }}
-          className="text-3xl font-bold text-ink"
-        >
+        <h1 style={{ fontFamily: "var(--font-display)" }} className="text-3xl font-bold text-ink">
           Milestone approved
         </h1>
-        <p className="text-muted text-base mt-2">
-          Your decision has been recorded.
-        </p>
+        <p className="text-muted text-base mt-2">Your decision has been recorded.</p>
       </div>
 
       {/* Decision record */}
@@ -76,11 +71,7 @@ export default function MilestoneApproved({ navigate }: PageProps) {
                       ? "font-semibold"
                       : ""
                 }`}
-                style={
-                  row.label === "Milestone value"
-                    ? { fontFamily: "var(--font-display)" }
-                    : {}
-                }
+                style={row.label === "Milestone value" ? { fontFamily: "var(--font-display)" } : {}}
               >
                 {row.value}
               </span>
@@ -96,9 +87,8 @@ export default function MilestoneApproved({ navigate }: PageProps) {
           <strong>
             Milestone {m.id}: {m.name}
           </strong>
-          . The submitted evidence, acceptance criteria, and this decision are
-          now permanently on record. Any payment associated with this milestone
-          is handled externally.
+          . The submitted evidence, acceptance criteria, and this decision are now permanently on
+          record. Any payment associated with this milestone is handled externally.
         </p>
       </div>
 
@@ -145,13 +135,7 @@ export default function MilestoneApproved({ navigate }: PageProps) {
           className="px-5 py-3 border border-edge text-ink text-sm font-medium rounded-xl hover:bg-edge/50 transition-all flex items-center gap-2"
           aria-label="Download decision record"
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            aria-hidden="true"
-          >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path
               d="M8 2v8M5 7l3 3 3-3"
               stroke="currentColor"
@@ -159,12 +143,7 @@ export default function MilestoneApproved({ navigate }: PageProps) {
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <path
-              d="M2 12h12"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
+            <path d="M2 12h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
           Download decision record
         </button>
@@ -181,5 +160,5 @@ export default function MilestoneApproved({ navigate }: PageProps) {
         evidence, and decisions. It does not hold or transfer money.
       </p>
     </div>
-  )
+  );
 }

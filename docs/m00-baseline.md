@@ -5,19 +5,19 @@
 
 ## Screen inventory
 
-| Screen | Existing role | Baseline state |
-| --- | --- | --- |
-| Login / invitation acceptance | Authenticate existing users or accept an invitation | API-connected; prototype account shortcuts are development-only. |
-| Overview | High-level project summary | API-connected project state. |
-| Projects | Project list | API-connected project state. |
-| New project | SME project-creation wizard | Existing Step 1 capability. |
-| Project details | Agreement/milestone summary | API-connected project state; routes are not dynamic yet. |
-| Invite customer | Create/manual-share customer invitation | API-connected; email delivery truthfully states it is not connected. |
-| Milestone review | Prototype evidence/criteria review | Evidence display is mock data; M03 owns real uploads. |
-| Confirm approval / approved receipt | Existing decision flow | Existing behavior; stable milestone ID routing is M01. |
-| Request changes / result | Existing decision flow | Formal resubmission is M04. |
-| Raise dispute / result | Existing decision flow | No adjudication is implemented. |
-| Activity | Project activity timeline | API-connected activity listing. |
+| Screen                              | Existing role                                       | Baseline state                                                       |
+| ----------------------------------- | --------------------------------------------------- | -------------------------------------------------------------------- |
+| Login / invitation acceptance       | Authenticate existing users or accept an invitation | API-connected; prototype account shortcuts are development-only.     |
+| Overview                            | High-level project summary                          | API-connected project state.                                         |
+| Projects                            | Project list                                        | API-connected project state.                                         |
+| New project                         | SME project-creation wizard                         | Existing Step 1 capability.                                          |
+| Project details                     | Agreement/milestone summary                         | API-connected project state; routes are not dynamic yet.             |
+| Invite customer                     | Create/manual-share customer invitation             | API-connected; email delivery truthfully states it is not connected. |
+| Milestone review                    | Prototype evidence/criteria review                  | Evidence display is mock data; M03 owns real uploads.                |
+| Confirm approval / approved receipt | Existing decision flow                              | Existing behavior; stable milestone ID routing is M01.               |
+| Request changes / result            | Existing decision flow                              | Formal resubmission is M04.                                          |
+| Raise dispute / result              | Existing decision flow                              | No adjudication is implemented.                                      |
+| Activity                            | Project activity timeline                           | API-connected activity listing.                                      |
 
 ## Existing component inventory
 
@@ -31,14 +31,14 @@ The current reusable shell is `components/Layout.tsx`. Page-level features curre
 
 Verify each launch-critical existing baseline path at:
 
-| Viewport | Representative size | Expected baseline observation |
-| --- | ---: | --- |
-| Small phone | 320px | Login fields/actions fit one column; no horizontal page scroll. |
-| Large phone | 390px | Login/action controls remain reachable and text wraps. |
-| Tablet portrait | 768px | Existing shell limitation is recorded; content must remain inspectable. |
-| Tablet landscape | 1024px | Sidebar/content collision and clipping must be checked. |
-| Laptop | 1366px | Main project flows and fixed sidebar fit without hidden final actions. |
-| Wide desktop | 1440px and 1920px | Content line lengths and unused card width remain readable. |
+| Viewport         | Representative size | Expected baseline observation                                           |
+| ---------------- | ------------------: | ----------------------------------------------------------------------- |
+| Small phone      |               320px | Login fields/actions fit one column; no horizontal page scroll.         |
+| Large phone      |               390px | Login/action controls remain reachable and text wraps.                  |
+| Tablet portrait  |               768px | Existing shell limitation is recorded; content must remain inspectable. |
+| Tablet landscape |              1024px | Sidebar/content collision and clipping must be checked.                 |
+| Laptop           |              1366px | Main project flows and fixed sidebar fit without hidden final actions.  |
+| Wide desktop     |   1440px and 1920px | Content line lengths and unused card width remain readable.             |
 
 The fixed desktop sidebar does not meet the intended mobile/tablet shell requirement. It is a known M01 limitation, not claimed as resolved by M00.
 
@@ -57,9 +57,9 @@ Known accessibility work deferred to the responsible feature milestone: responsi
 
 The current app displays API load failures with a retry button and avoids replacing that failure with demo data. Individual page empty, forbidden, and not-found states are incomplete and must be added with dynamic resource routing in M01. M00 records this limitation rather than hiding it with a generic success state.
 
-## Tooling limitation
+## Formatting baseline
 
-`oxfmt 0.2.0` is the repository's established formatter. Its check reports formatting drift across the original baseline source files. Applying it was evaluated and immediately reverted because it also removes required TypeScript member separators from existing files (including `src/api/trustpay.ts`, `src/pages/Activity.tsx`, `src/state/AuthContext.tsx`, and `src/state/TrustPayContext.tsx`), producing invalid TypeScript. M00 therefore preserves the original source formatting and records `pnpm run format:check` as a known baseline failure. CI records that result as non-blocking until the formatter/toolchain can be upgraded and verified under its owning milestone. This is not an M00 product change.
+The formatter is pinned to `oxfmt 0.65.0`. The repository has been formatted with that version; `pnpm run format:check`, type-checking, and the production build all pass. Formatting is now a blocking CI gate.
 
 ## Dependency scan result
 
