@@ -121,6 +121,12 @@ export default function Layout({ children, currentView, navigate }: LayoutProps)
 
   return (
     <div className="flex h-screen bg-canvas overflow-hidden" style={{ fontFamily: "var(--font-body)" }}>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-ink focus:px-4 focus:py-3 focus:text-white"
+      >
+        Skip to main content
+      </a>
       {/* Sidebar */}
       <aside className="w-64 flex-shrink-0 bg-card border-r border-edge flex flex-col z-10">
         {/* Logo */}
@@ -222,7 +228,7 @@ export default function Layout({ children, currentView, navigate }: LayoutProps)
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto" id="main-content">
+        <main className="flex-1 overflow-auto" id="main-content" tabIndex={-1}>
           <div className="max-w-[1440px] mx-auto p-8">
             {children}
           </div>

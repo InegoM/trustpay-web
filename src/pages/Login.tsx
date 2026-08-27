@@ -2,6 +2,7 @@ import { type FormEvent, useState } from "react"
 import { useAuth } from "@/state/AuthContext"
 
 type Mode = "login" | "invitation"
+const showPrototypeAccounts = import.meta.env.DEV
 
 function invitationTokenFromHash(): string {
   const match = window.location.hash.match(/^#\/invite\/(.+)$/)
@@ -12,8 +13,8 @@ export default function Login() {
   const { login, acceptInvitation, error, clearError } = useAuth()
   const linkedToken = invitationTokenFromHash()
   const [mode, setMode] = useState<Mode>(linkedToken ? "invitation" : "login")
-  const [email, setEmail] = useState("omar@example.test")
-  const [password, setPassword] = useState("TrustPayDemo!2026")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [displayName, setDisplayName] = useState("")
   const [token, setToken] = useState(linkedToken)
   const [submitting, setSubmitting] = useState(false)
@@ -21,11 +22,7 @@ export default function Login() {
   const switchMode = (next: Mode) => {
     clearError()
     setMode(next)
-    if (next === "invitation") {
-      setPassword("")
-    } else {
-      setPassword("TrustPayDemo!2026")
-    }
+    setPassword("")
   }
 
   const submit = async (event: FormEvent) => {
@@ -123,9 +120,9 @@ export default function Login() {
             </button>
           </form>
 
-          {mode === "login" && (
+          {showPrototypeAccounts && mode === "login" && (
             <div className="mt-6 rounded-xl border border-edge bg-canvas p-3.5">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">Prototype accounts</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">Development-only prototype accounts</p>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <button onClick={() => chooseDemo("nadia@example.test")} className="rounded-lg border border-edge bg-card px-3 py-2 text-left hover:border-brand/40">
                   <span className="block text-xs font-semibold text-ink">Nadia</span><span className="text-[11px] text-muted">SME owner</span>
@@ -140,7 +137,7 @@ export default function Login() {
           <button onClick={() => switchMode(mode === "login" ? "invitation" : "login")} className="mt-6 text-sm font-semibold text-brand hover:underline">
             {mode === "login" ? "Have an invitation? Accept it" : "Already have an account? Log in"}
           </button>
-          <p className="mt-3 text-center text-[11px] text-muted">Bank access is provisioned by invitation or organizational SSO only.</p>
+          <p className="mt-3 text-center text-[11px] text-muted">TrustPay account access is provided by an organization invitation. Contact your organization administrator if you need help.</p>
         </section>
       </div>
     </div>
