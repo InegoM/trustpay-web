@@ -1,5 +1,4 @@
 import {
-  PROJECT as DEMO_PROJECT,
   type ActivityEvent,
   type EventType,
   type Milestone,
@@ -18,7 +17,8 @@ interface ApiErrorEnvelope {
 }
 
 export interface ApiMilestone {
-  id: number;
+  id: string;
+  sequenceNumber: number;
   name: string;
   value: number;
   status: MilestoneStatus;
@@ -86,7 +86,8 @@ export interface CreatedProjectInvitation {
 export interface ApiActivityEvent {
   id: string;
   projectId: string;
-  milestoneId?: number;
+  milestoneId?: string;
+  milestoneSequenceNumber?: number;
   actor: string;
   actorType: "sme" | "customer" | "system";
   occurredAt: string;
@@ -255,11 +256,11 @@ export function getProjectActivity(projectId: string): Promise<ApiActivityEvent[
 
 export function recordDecision(
   projectId: string,
-  milestoneId: number,
+  milestoneId: string,
   decision: DecisionInput,
 ): Promise<DecisionResult> {
   return request(
-    `/api/v1/projects/${encodeURIComponent(projectId)}/milestones/${milestoneId}/decisions`,
+    `/api/v1/projects/${encodeURIComponent(projectId)}/milestones/${encodeURIComponent(milestoneId)}/decisions`,
     { method: "POST", body: JSON.stringify(decision) },
   );
 }
@@ -281,6 +282,7 @@ function formatDate(value?: string, includeTime = false): string | undefined {
 function mergeMilestone(api: ApiMilestone, current?: Milestone): Milestone {
   return {
     id: api.id,
+    sequenceNumber: api.sequenceNumber,
     name: api.name,
     value: api.value,
     status: api.status,
@@ -294,10 +296,7 @@ function mergeMilestone(api: ApiMilestone, current?: Milestone): Milestone {
   };
 }
 
-export function projectFromApi(
-  api: ApiProject,
-  current: ProjectRecord = DEMO_PROJECT,
-): ProjectRecord {
+export function projectFromApi(api: ApiProject, current?: ProjectRecord): ProjectRecord {
   return {
     id: api.id,
     name: api.name,
@@ -322,12 +321,12 @@ export function projectFromApi(
     milestones: api.milestones.map((milestone) =>
       mergeMilestone(
         milestone,
-        current.id === api.id
+        current?.id === api.id
           ? current.milestones.find((item) => item.id === milestone.id)
           : undefined,
       ),
     ),
-    variations: current.id === api.id ? current.variations : [],
+    variations: current?.id === api.id ? current.variations : [],
   };
 }
 
@@ -338,7 +337,9 @@ export function activityFromApi(api: ApiActivityEvent, projectName: string): Act
     actorType: api.actorType,
     timestamp: formatDate(api.occurredAt, true) ?? api.occurredAt,
     project: projectName,
-    ...(api.milestoneId ? { milestone: `Milestone ${api.milestoneId}` } : {}),
+    ...(api.milestoneSequenceNumber
+      ? { milestone: `Milestone ${api.milestoneSequenceNumber}` }
+      : {}),
     description: api.description,
     event: api.type as EventType,
   };

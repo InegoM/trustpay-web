@@ -13,6 +13,24 @@ export type View =
   | "raise-dispute-result"
   | "activity";
 
+export interface RouteLocation {
+  view: View | "not-found";
+  projectId?: string;
+  milestoneId?: string;
+}
+
+export interface NavigationParams {
+  projectId?: string;
+  milestoneId?: string;
+}
+
+export type Navigate = (view: View, params?: NavigationParams) => void;
+
 export interface PageProps {
-  navigate: (view: View) => void;
+  navigate: Navigate;
+}
+
+export interface MilestonePageProps extends PageProps {
+  milestoneId: string;
+  showResult?: boolean;
 }

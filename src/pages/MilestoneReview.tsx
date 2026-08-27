@@ -1,6 +1,6 @@
 import { fmt } from "@/data/mock";
 import { useTrustPay } from "@/state/TrustPayContext";
-import type { PageProps } from "@/types";
+import type { MilestonePageProps } from "@/types";
 import { useAuth } from "@/state/AuthContext";
 
 const CARD =
@@ -53,11 +53,21 @@ const EvidenceIcon = ({ type }: { type: string }) => {
   );
 };
 
-export default function MilestoneReview({ navigate }: PageProps) {
+export default function MilestoneReview({ navigate, milestoneId }: MilestonePageProps) {
   const { project: PROJECT } = useTrustPay();
   const { canDecide: canUserDecide } = useAuth();
-  const m = PROJECT.milestones[1];
+  const m = PROJECT.milestones.find((item) => item.id === milestoneId)!;
   const canDecide = canUserDecide && m.status === "awaiting-decision";
+  const statusLabel =
+    m.status === "awaiting-decision"
+      ? "Awaiting decision"
+      : m.status === "not-started"
+        ? "Not started"
+        : m.status === "changes-requested"
+          ? "Changes requested"
+          : m.status === "disputed"
+            ? "Disputed"
+            : "Approved";
 
   return (
     <div className="space-y-6">
@@ -87,8 +97,8 @@ export default function MilestoneReview({ navigate }: PageProps) {
               Review Milestone
             </h1>
             <p className="text-muted text-sm mt-1">
-              {PROJECT.name} &middot; Milestone {m.id} of {PROJECT.milestones.length} &middot;{" "}
-              {m.name}
+              {PROJECT.name} &middot; Milestone {m.sequenceNumber} of {PROJECT.milestones.length}{" "}
+              &middot; {m.name}
             </p>
           </div>
         </div>
@@ -106,20 +116,26 @@ export default function MilestoneReview({ navigate }: PageProps) {
           </svg>
         </div>
         <div className="flex-1">
-          <p className="text-sm font-semibold text-warn">Response required by {m.deadline}</p>
+          <p className="text-sm font-semibold text-warn">
+            {m.status === "awaiting-decision"
+              ? `Response required by ${m.deadline ?? "the recorded deadline"}`
+              : statusLabel}
+          </p>
           <p className="text-xs text-warn/80 mt-0.5">
-            A decision must be recorded before this deadline to maintain the project timeline.
+            {m.status === "awaiting-decision"
+              ? "A decision must be recorded before this deadline to maintain the project timeline."
+              : "This milestone is available for review in its current recorded state."}
           </p>
         </div>
         <span className="px-3 py-1.5 bg-warn text-white text-xs font-semibold rounded-xl flex-shrink-0">
-          Awaiting decision
+          {statusLabel}
         </span>
       </div>
 
       {/* Two-column layout */}
-      <div className="grid grid-cols-3 gap-6 items-start">
+      <div className="grid grid-cols-1 gap-6 items-start xl:grid-cols-3">
         {/* Left: review content */}
-        <div className="col-span-2 space-y-5">
+        <div className="space-y-5 xl:col-span-2">
           {/* Submission info */}
           <div className={`${CARD} p-6`}>
             <h2
@@ -128,11 +144,11 @@ export default function MilestoneReview({ navigate }: PageProps) {
             >
               Submission details
             </h2>
-            <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+            <div className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
               {[
                 { label: "Project", value: PROJECT.name },
 
-                { label: "Milestone", value: `Milestone ${m.id}: ${m.name}` },
+                { label: "Milestone", value: `Milestone ${m.sequenceNumber}: ${m.name}` },
 
                 { label: "Milestone value", value: fmt(m.value) },
 

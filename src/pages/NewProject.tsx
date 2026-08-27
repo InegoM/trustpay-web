@@ -164,7 +164,9 @@ export default function NewProject({ navigate }: PageProps) {
             .filter(Boolean),
         })),
       });
-      if (createdId) window.location.hash = hashForView("project-details", createdId).slice(1);
+      if (createdId) {
+        window.location.hash = hashForView("project-details", { projectId: createdId }).slice(1);
+      }
     } finally {
       setSubmitting(false);
     }

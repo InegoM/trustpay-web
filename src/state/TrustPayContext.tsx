@@ -18,7 +18,24 @@ import {
   recordDecision,
   type CreateProjectInput,
 } from "@/api/trustpay";
-import { ACTIVITY_LOG, PROJECT, type ActivityEvent, type ProjectRecord } from "@/data/mock";
+import type { ActivityEvent, ProjectRecord } from "@/data/mock";
+
+const EMPTY_PROJECT: ProjectRecord = {
+  id: "",
+  name: "",
+  customer: "",
+  sme: "",
+  agreedValue: 0,
+  approvedValue: 0,
+  outstandingValue: 0,
+  status: "",
+  agreementVersion: "",
+  agreementStatus: "draft",
+  agreementAccepted: "Not accepted",
+  authorizedApprover: "Not assigned",
+  milestones: [],
+  variations: [],
+};
 
 type SyncStatus = "loading" | "connected" | "error";
 export interface LastDecision {
@@ -38,13 +55,13 @@ interface TrustPayState {
   refresh: () => Promise<void>;
   selectProject: (projectId: string) => Promise<boolean>;
   createProject: (input: CreateProjectInput) => Promise<string | null>;
-  approveMilestone: (milestoneId: number) => Promise<boolean>;
+  approveMilestone: (milestoneId: string) => Promise<boolean>;
   requestChanges: (
-    milestoneId: number,
+    milestoneId: string,
     details: { reason: string; comment: string; responseDate: string },
   ) => Promise<boolean>;
   raiseDispute: (
-    milestoneId: number,
+    milestoneId: string,
     details: { reason: string; explanation: string },
   ) => Promise<boolean>;
 }
@@ -52,9 +69,9 @@ interface TrustPayState {
 const TrustPayContext = createContext<TrustPayState | null>(null);
 
 export default function TrustPayProvider({ children }: { children: ReactNode }) {
-  const [project, setProject] = useState<ProjectRecord>(() => structuredClone(PROJECT));
-  const [projects, setProjects] = useState<ProjectRecord[]>(() => [structuredClone(PROJECT)]);
-  const [activity, setActivity] = useState<ActivityEvent[]>(() => structuredClone(ACTIVITY_LOG));
+  const [project, setProject] = useState<ProjectRecord>(EMPTY_PROJECT);
+  const [projects, setProjects] = useState<ProjectRecord[]>([]);
+  const [activity, setActivity] = useState<ActivityEvent[]>([]);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("loading");
   const [syncError, setSyncError] = useState<string | null>(null);
   const [lastDecision, setLastDecision] = useState<LastDecision | null>(null);
@@ -70,7 +87,13 @@ export default function TrustPayProvider({ children }: { children: ReactNode }) 
     try {
       const availableProjects = await listProjects();
       const selected = availableProjects[0];
-      if (!selected) throw new Error("No projects are available for this account.");
+      if (!selected) {
+        setProjects([]);
+        setProject(EMPTY_PROJECT);
+        setActivity([]);
+        setSyncStatus("connected");
+        return;
+      }
       const selectedId = availableProjects.some((item) => item.id === project.id)
         ? project.id
         : selected.id;
@@ -78,7 +101,7 @@ export default function TrustPayProvider({ children }: { children: ReactNode }) 
       const mapped = projectFromApi(apiProject, project);
       setProjects(
         availableProjects.map((item) =>
-          projectFromApi(item, item.id === project.id ? project : PROJECT),
+          projectFromApi(item, item.id === project.id ? project : undefined),
         ),
       );
       setProject(mapped);
@@ -96,7 +119,7 @@ export default function TrustPayProvider({ children }: { children: ReactNode }) 
       setSyncError(null);
       try {
         const apiProject = await getProject(projectId);
-        const current = projects.find((item) => item.id === projectId) ?? PROJECT;
+        const current = projects.find((item) => item.id === projectId);
         const mapped = projectFromApi(apiProject, current);
         setProject(mapped);
         setProjects((items) => items.map((item) => (item.id === mapped.id ? mapped : item)));
@@ -118,7 +141,7 @@ export default function TrustPayProvider({ children }: { children: ReactNode }) 
       setSyncError(null);
       try {
         const created = await createProjectRequest(input);
-        const mapped = projectFromApi(created, PROJECT);
+        const mapped = projectFromApi(created);
         setProject(mapped);
         setProjects((items) => [mapped, ...items.filter((item) => item.id !== mapped.id)]);
         await loadActivity(mapped.id, mapped.name);
@@ -141,7 +164,7 @@ export default function TrustPayProvider({ children }: { children: ReactNode }) 
 
   const submitDecision = useCallback(
     async (
-      milestoneId: number,
+      milestoneId: string,
       decision:
         | { action: "approve" }
         | {
@@ -180,12 +203,12 @@ export default function TrustPayProvider({ children }: { children: ReactNode }) 
   );
 
   const approveMilestone = useCallback(
-    (milestoneId: number) => submitDecision(milestoneId, { action: "approve" }),
+    (milestoneId: string) => submitDecision(milestoneId, { action: "approve" }),
     [submitDecision],
   );
 
   const requestChanges = useCallback(
-    (milestoneId: number, details: { reason: string; comment: string; responseDate: string }) =>
+    (milestoneId: string, details: { reason: string; comment: string; responseDate: string }) =>
       submitDecision(milestoneId, {
         action: "request-changes",
         ...details,
@@ -194,7 +217,7 @@ export default function TrustPayProvider({ children }: { children: ReactNode }) 
   );
 
   const raiseDispute = useCallback(
-    (milestoneId: number, details: { reason: string; explanation: string }) =>
+    (milestoneId: string, details: { reason: string; explanation: string }) =>
       submitDecision(milestoneId, { action: "raise-dispute", ...details }),
     [submitDecision],
   );

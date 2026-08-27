@@ -1,4 +1,4 @@
-import type { View } from "@/types";
+import type { NavigationParams, RouteLocation, View } from "@/types";
 
 const STATIC_HASHES: Partial<Record<View, string>> = {
   overview: "#/overview",
@@ -7,44 +7,59 @@ const STATIC_HASHES: Partial<Record<View, string>> = {
   activity: "#/activity",
 };
 
-export function hashForView(view: View, projectId = "cafe-renovation"): string {
+const MILESTONE_SUFFIXES: Record<string, View> = {
+  review: "milestone-review",
+  confirm: "confirm-approval",
+  approved: "milestone-approved",
+  "request-changes": "request-changes",
+  "changes-requested": "request-changes-result",
+  "raise-dispute": "raise-dispute",
+  disputed: "raise-dispute-result",
+};
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export function hashForView(view: View, params: NavigationParams = {}): string {
   const staticHash = STATIC_HASHES[view];
   if (staticHash) return staticHash;
-  const base = `#/projects/${encodeURIComponent(projectId)}`;
-  const projectHashes: Partial<Record<View, string>> = {
-    "project-details": base,
-    "invite-customer": `${base}/invite`,
-    "milestone-review": `${base}/milestones/2/review`,
-    "confirm-approval": `${base}/milestones/2/confirm`,
-    "milestone-approved": `${base}/milestones/2/approved`,
-    "request-changes": `${base}/milestones/2/request-changes`,
-    "request-changes-result": `${base}/milestones/2/changes-requested`,
-    "raise-dispute": `${base}/milestones/2/raise-dispute`,
-    "raise-dispute-result": `${base}/milestones/2/disputed`,
-  };
-  return projectHashes[view] ?? "#/overview";
+  if (!params.projectId) return "#/not-found";
+  const base = `#/projects/${encodeURIComponent(params.projectId)}`;
+  if (view === "project-details") return base;
+  if (view === "invite-customer") return `${base}/invite`;
+  if (!params.milestoneId) return "#/not-found";
+  const milestoneBase = `${base}/milestones/${encodeURIComponent(params.milestoneId)}`;
+  const suffix = Object.entries(MILESTONE_SUFFIXES).find(([, item]) => item === view)?.[0];
+  return suffix ? `${milestoneBase}/${suffix}` : "#/not-found";
 }
 
-export function viewFromHash(hash: string): View {
-  if (!hash || hash === "#" || hash === "#/") return "overview";
-  if (hash === "#/overview") return "overview";
-  if (hash === "#/projects") return "projects";
-  if (hash === "#/projects/new") return "new-project";
-  if (hash === "#/activity") return "activity";
-  if (/^#\/projects\/[^/]+$/.test(hash)) return "project-details";
-  if (/^#\/projects\/[^/]+\/invite$/.test(hash)) return "invite-customer";
-  if (hash.endsWith("/milestones/2/review")) return "milestone-review";
-  if (hash.endsWith("/milestones/2/confirm")) return "confirm-approval";
-  if (hash.endsWith("/milestones/2/approved")) return "milestone-approved";
-  if (hash.endsWith("/milestones/2/request-changes")) return "request-changes";
-  if (hash.endsWith("/milestones/2/changes-requested")) return "request-changes-result";
-  if (hash.endsWith("/milestones/2/raise-dispute")) return "raise-dispute";
-  if (hash.endsWith("/milestones/2/disputed")) return "raise-dispute-result";
-  return "overview";
+function decode(segment: string): string | null {
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return null;
+  }
 }
 
-export function projectIdFromHash(hash: string): string | null {
-  const match = hash.match(/^#\/projects\/([^/]+)/);
-  if (!match || match[1] === "new") return null;
-  return decodeURIComponent(match[1]);
+export function routeFromHash(hash: string): RouteLocation {
+  if (!hash || hash === "#" || hash === "#/" || hash === "#/overview") {
+    return { view: "overview" };
+  }
+  if (hash === "#/projects") return { view: "projects" };
+  if (hash === "#/projects/new") return { view: "new-project" };
+  if (hash === "#/activity") return { view: "activity" };
+
+  const parts = hash.replace(/^#\/?/, "").split("/");
+  if (parts[0] !== "projects" || !parts[1]) return { view: "not-found" };
+  const projectId = decode(parts[1]);
+  if (!projectId || projectId === "new") return { view: "not-found" };
+  if (parts.length === 2) return { view: "project-details", projectId };
+  if (parts.length === 3 && parts[2] === "invite") {
+    return { view: "invite-customer", projectId };
+  }
+  if (parts.length !== 5 || parts[2] !== "milestones") return { view: "not-found" };
+  const milestoneId = decode(parts[3]);
+  const view = MILESTONE_SUFFIXES[parts[4]];
+  return milestoneId && UUID_PATTERN.test(milestoneId) && view
+    ? { view, projectId, milestoneId }
+    : { view: "not-found" };
 }

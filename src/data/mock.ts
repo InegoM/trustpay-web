@@ -44,7 +44,9 @@ export interface EvidenceItem {
 }
 
 export interface Milestone {
-  id: number;
+  id: string;
+
+  sequenceNumber: number;
 
   name: string;
 
@@ -111,7 +113,9 @@ export interface ProjectRecord {
 }
 
 const MILESTONE_2: Milestone = {
-  id: 2,
+  id: "30000000-0000-4000-8000-000000000002",
+
+  sequenceNumber: 2,
 
   name: "Structural and electrical work",
 
@@ -208,7 +212,9 @@ export const PROJECT: ProjectRecord = {
 
   milestones: [
     {
-      id: 1,
+      id: "30000000-0000-4000-8000-000000000001",
+
+      sequenceNumber: 1,
 
       name: "Design and planning",
 
@@ -221,7 +227,9 @@ export const PROJECT: ProjectRecord = {
     MILESTONE_2,
 
     {
-      id: 3,
+      id: "30000000-0000-4000-8000-000000000003",
+
+      sequenceNumber: 3,
 
       name: "Finishing and handover",
 

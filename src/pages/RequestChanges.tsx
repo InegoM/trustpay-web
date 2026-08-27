@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { useTrustPay } from "@/state/TrustPayContext";
-import type { PageProps } from "@/types";
+import type { MilestonePageProps } from "@/types";
 
 const CARD =
   "bg-card rounded-2xl border border-edge shadow-[0_2px_12px_rgba(13,31,64,0.06),0_1px_3px_rgba(13,31,64,0.04)]";
@@ -18,8 +18,7 @@ const REASONS = [
   "Other",
 ];
 
-export default function RequestChanges({ navigate }: PageProps) {
-  const [submitted, setSubmitted] = useState(false);
+export default function RequestChanges({ navigate, milestoneId, showResult }: MilestonePageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [reason, setReason] = useState("Evidence is incomplete or unclear");
@@ -30,9 +29,9 @@ export default function RequestChanges({ navigate }: PageProps) {
 
   const [responseDate, setResponseDate] = useState("2026-08-30");
   const { project: PROJECT, requestChanges, lastDecision } = useTrustPay();
-  const m = PROJECT.milestones[1];
+  const m = PROJECT.milestones.find((item) => item.id === milestoneId)!;
 
-  if (submitted) {
+  if (showResult) {
     return (
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Result */}
@@ -64,7 +63,7 @@ export default function RequestChanges({ navigate }: PageProps) {
             {[
               { label: "Project", value: PROJECT.name },
 
-              { label: "Milestone", value: `Milestone ${m.id}: ${m.name}` },
+              { label: "Milestone", value: `Milestone ${m.sequenceNumber}: ${m.name}` },
 
               { label: "Requested by", value: PROJECT.authorizedApprover },
 
@@ -147,7 +146,7 @@ export default function RequestChanges({ navigate }: PageProps) {
             Request Changes
           </h1>
           <p className="text-muted text-sm mt-1">
-            {PROJECT.name} &middot; Milestone {m.id}: {m.name}
+            {PROJECT.name} &middot; Milestone {m.sequenceNumber}: {m.name}
           </p>
         </div>
       </div>
@@ -248,7 +247,7 @@ export default function RequestChanges({ navigate }: PageProps) {
             if (reason.trim() && comment.trim() && responseDate) {
               setIsSubmitting(true);
               if (await requestChanges(m.id, { reason, comment, responseDate })) {
-                setSubmitted(true);
+                navigate("request-changes-result");
               } else {
                 setIsSubmitting(false);
               }

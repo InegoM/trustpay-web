@@ -1,12 +1,12 @@
 import { type ReactNode } from "react";
-import type { View } from "@/types";
+import type { Navigate, View } from "@/types";
 import { useAuth } from "@/state/AuthContext";
 import { useTrustPay } from "@/state/TrustPayContext";
 
 interface LayoutProps {
   children: ReactNode;
   currentView: View;
-  navigate: (view: View) => void;
+  navigate: Navigate;
 }
 
 function navSection(view: View): "overview" | "projects" | "activity" | "other" {
@@ -172,7 +172,7 @@ export default function Layout({ children, currentView, navigate }: LayoutProps)
         Skip to main content
       </a>
       {/* Sidebar */}
-      <aside className="w-64 flex-shrink-0 bg-card border-r border-edge flex flex-col z-10">
+      <aside className="hidden w-64 flex-shrink-0 bg-card border-r border-edge lg:flex flex-col z-10">
         {/* Logo */}
         <div className="h-16 flex items-center px-5 border-b border-edge flex-shrink-0">
           <div className="flex items-center gap-2">
@@ -245,7 +245,7 @@ export default function Layout({ children, currentView, navigate }: LayoutProps)
       {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="h-16 bg-card border-b border-edge flex items-center justify-between px-8 flex-shrink-0">
+        <header className="h-16 bg-card border-b border-edge flex items-center justify-between px-4 sm:px-8 flex-shrink-0">
           <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm">
             {crumbs.map((part, i) => (
               <span key={i} className="flex items-center gap-2">
@@ -260,9 +260,22 @@ export default function Layout({ children, currentView, navigate }: LayoutProps)
                     />
                   </svg>
                 )}
-                <span className={i === crumbs.length - 1 ? "text-ink font-medium" : "text-muted"}>
-                  {part}
-                </span>
+                {i === crumbs.length - 1 ? (
+                  <span className="text-ink font-medium" aria-current="page">
+                    {part}
+                  </span>
+                ) : (
+                  <button
+                    className="text-muted hover:text-brand hover:underline"
+                    onClick={() =>
+                      navigate(i === 0 ? "projects" : "project-details", {
+                        projectId: project.id,
+                      })
+                    }
+                  >
+                    {part}
+                  </button>
+                )}
               </span>
             ))}
           </nav>
@@ -290,9 +303,19 @@ export default function Layout({ children, currentView, navigate }: LayoutProps)
 
         {/* Page content */}
         <main className="flex-1 overflow-auto" id="main-content" tabIndex={-1}>
-          <div className="max-w-[1440px] mx-auto p-8">{children}</div>
+          <div className="max-w-[1440px] mx-auto p-4 pb-24 sm:p-6 sm:pb-24 lg:p-8 lg:pb-8">
+            {children}
+          </div>
         </main>
       </div>
+      <nav
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-edge bg-card p-2 lg:hidden"
+        aria-label="Mobile navigation"
+      >
+        {navBtn("Overview", "overview", <GridIcon active={section === "overview"} />)}
+        {navBtn("Projects", "projects", <FolderIcon active={section === "projects"} />)}
+        {navBtn("Activity", "activity", <ClockIcon active={section === "activity"} />)}
+      </nav>
     </div>
   );
 }
