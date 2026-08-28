@@ -17,6 +17,11 @@ function navSection(view: View): "overview" | "projects" | "activity" | "other" 
     "new-project",
     "project-details",
     "invite-customer",
+    "agreement-review",
+    "agreement-confirm",
+    "agreement-receipt",
+    "agreement-amendment",
+    "agreement-amend",
     "milestone-review",
     "confirm-approval",
     "milestone-approved",
@@ -41,6 +46,16 @@ function breadcrumb(view: View, projectName: string): string[] {
       return ["Projects", projectName];
     case "invite-customer":
       return ["Projects", projectName, "Invite customer"];
+    case "agreement-review":
+      return ["Projects", projectName, "Agreement"];
+    case "agreement-confirm":
+      return ["Projects", projectName, "Confirm acceptance"];
+    case "agreement-receipt":
+      return ["Projects", projectName, "Acceptance recorded"];
+    case "agreement-amendment":
+      return ["Projects", projectName, "Request amendment"];
+    case "agreement-amend":
+      return ["Projects", projectName, "Create amendment"];
     case "milestone-review":
       return ["Projects", projectName, "Review Milestone"];
     case "confirm-approval":
