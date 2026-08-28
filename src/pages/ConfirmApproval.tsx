@@ -2,16 +2,16 @@ import { useState } from "react";
 
 import { fmt } from "@/data/mock";
 import { useTrustPay } from "@/state/TrustPayContext";
-import type { PageProps } from "@/types";
+import type { MilestonePageProps } from "@/types";
 
 const CARD =
   "bg-card rounded-2xl border border-edge shadow-[0_2px_12px_rgba(13,31,64,0.06),0_1px_3px_rgba(13,31,64,0.04)]";
 
-export default function ConfirmApproval({ navigate }: PageProps) {
+export default function ConfirmApproval({ navigate, milestoneId }: MilestonePageProps) {
   const [checked, setChecked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { project: PROJECT, approveMilestone } = useTrustPay();
-  const m = PROJECT.milestones[1];
+  const m = PROJECT.milestones.find((item) => item.id === milestoneId)!;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -59,7 +59,7 @@ export default function ConfirmApproval({ navigate }: PageProps) {
 
             {
               label: "Milestone",
-              value: `Milestone ${m.id} of ${PROJECT.milestones.length}: ${m.name}`,
+              value: `Milestone ${m.sequenceNumber} of ${PROJECT.milestones.length}: ${m.name}`,
             },
 
             { label: "Milestone value", value: fmt(m.value) },
@@ -141,7 +141,7 @@ export default function ConfirmApproval({ navigate }: PageProps) {
               Selecting <strong className="text-ink">Confirm approval</strong> records your decision
               that{" "}
               <strong className="text-ink">
-                Milestone {m.id}: {m.name}
+                Milestone {m.sequenceNumber}: {m.name}
               </strong>{" "}
               meets the agreed acceptance criteria. This decision is logged with your identity, the
               timestamp, and a reference number. Any payment associated with this milestone is

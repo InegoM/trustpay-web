@@ -29,7 +29,7 @@ export default function ProjectDetails({ navigate }: PageProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
         <div className="flex items-start gap-4">
           <button
             onClick={() => navigate("projects")}
@@ -78,7 +78,7 @@ export default function ProjectDetails({ navigate }: PageProps) {
       </div>
 
       {/* Value tiles */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {[
           {
             label: "Agreed project value",
@@ -115,9 +115,9 @@ export default function ProjectDetails({ navigate }: PageProps) {
       </div>
 
       {/* Main grid */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* Milestone timeline — 2 cols */}
-        <div className={`${CARD} col-span-2 p-6`}>
+        <div className={`${CARD} p-6 xl:col-span-2`}>
           <h2
             style={{ fontFamily: "var(--font-display)" }}
             className="text-base font-semibold text-ink mb-6"
@@ -181,7 +181,7 @@ export default function ProjectDetails({ navigate }: PageProps) {
                             style={{ fontFamily: "var(--font-display)" }}
                             className="font-semibold text-ink text-sm"
                           >
-                            Milestone {m.id}: {m.name}
+                            Milestone {m.sequenceNumber}: {m.name}
                           </span>
                           <span
                             className={`px-2 py-0.5 text-xs font-medium rounded-full ${milestoneStatusStyle[m.status]}`}
@@ -218,16 +218,25 @@ export default function ProjectDetails({ navigate }: PageProps) {
                         )}
                       </div>
 
-                      {(m.status === "awaiting-decision" || m.status === "changes-requested") && (
-                        <button
-                          onClick={() => navigate("milestone-review")}
-                          className="flex-shrink-0 px-3.5 py-2 bg-brand text-white text-xs font-medium rounded-xl hover:bg-brand/90 transition-all"
-                        >
-                          {m.status === "changes-requested"
+                      <button
+                        onClick={() =>
+                          navigate("milestone-review", {
+                            projectId: PROJECT.id,
+                            milestoneId: m.id,
+                          })
+                        }
+                        className={`flex-shrink-0 rounded-xl px-3.5 py-2 text-xs font-medium transition-all ${
+                          m.status === "awaiting-decision" || m.status === "changes-requested"
+                            ? "bg-brand text-white hover:bg-brand/90"
+                            : "border border-edge text-ink hover:bg-edge/50"
+                        }`}
+                      >
+                        {m.status === "awaiting-decision"
+                          ? "Open customer review"
+                          : m.status === "changes-requested"
                             ? "View request"
-                            : "Open customer review"}
-                        </button>
-                      )}
+                            : "View milestone"}
+                      </button>
                     </div>
                   </div>
                 </div>

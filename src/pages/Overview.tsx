@@ -19,8 +19,8 @@ export default function Overview({ navigate }: PageProps) {
   const { canCreateProject } = useAuth();
   const attentionMilestone =
     PROJECT.milestones.find((milestone) => milestone.status === "awaiting-decision") ??
-    PROJECT.milestones[1] ??
-    PROJECT.milestones[0];
+    PROJECT.milestones.find((milestone) => milestone.status === "changes-requested") ??
+    PROJECT.milestones.find((milestone) => milestone.status !== "approved");
   const approvedCount = PROJECT.milestones.filter(
     (milestone) => milestone.status === "approved",
   ).length;
@@ -39,7 +39,7 @@ export default function Overview({ navigate }: PageProps) {
       </div>
 
       {/* Stat tiles */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
           {
             label: "Agreed project value",
@@ -84,9 +84,9 @@ export default function Overview({ navigate }: PageProps) {
       </div>
 
       {/* Main row */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* Next action — spans 2 cols */}
-        <div className="col-span-2 bg-card rounded-2xl border border-brand-mid shadow-[0_2px_16px_rgba(43,155,142,0.1),0_1px_4px_rgba(43,155,142,0.06)] p-6">
+        <div className="bg-card rounded-2xl border border-brand-mid shadow-[0_2px_16px_rgba(43,155,142,0.1),0_1px_4px_rgba(43,155,142,0.06)] p-6 xl:col-span-2">
           <div className="flex items-center gap-2 mb-4">
             <span className="inline-block w-2 h-2 rounded-full bg-warn" aria-hidden="true" />
             <span className="text-xs font-semibold text-warn uppercase tracking-wider">
@@ -103,11 +103,11 @@ export default function Overview({ navigate }: PageProps) {
                 {PROJECT.agreementStatus === "draft"
                   ? "Customer invitation needed"
                   : attentionMilestone?.status === "awaiting-decision"
-                    ? `Customer decision awaited — Milestone ${attentionMilestone.id}`
+                    ? `Customer decision awaited — Milestone ${attentionMilestone.sequenceNumber}`
                     : attentionMilestone?.status === "approved"
-                      ? `Milestone ${attentionMilestone.id} decision recorded`
+                      ? `Milestone ${attentionMilestone.sequenceNumber} decision recorded`
                       : attentionMilestone?.status === "disputed"
-                        ? `Milestone ${attentionMilestone.id} decision paused`
+                        ? `Milestone ${attentionMilestone.sequenceNumber} decision paused`
                         : "Project setup is ready"}
               </h2>
               <p className="text-ink-dim text-sm mt-1">
@@ -160,6 +160,9 @@ export default function Overview({ navigate }: PageProps) {
                     : PROJECT.agreementStatus === "draft"
                       ? "project-details"
                       : "milestone-review",
+                  attentionMilestone
+                    ? { projectId: PROJECT.id, milestoneId: attentionMilestone.id }
+                    : { projectId: PROJECT.id },
                 )
               }
               className="px-4 py-2.5 bg-brand text-white text-sm font-medium rounded-xl hover:bg-brand/90 transition-all focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
@@ -287,7 +290,7 @@ export default function Overview({ navigate }: PageProps) {
                     title={m.name}
                   />
                   <span className="text-[10px] text-muted w-10 text-center leading-tight truncate">
-                    {m.id}
+                    {m.sequenceNumber}
                   </span>
                 </div>
               ))}

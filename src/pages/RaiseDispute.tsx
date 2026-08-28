@@ -1,13 +1,12 @@
 import { useState } from "react";
 
 import { useTrustPay } from "@/state/TrustPayContext";
-import type { PageProps } from "@/types";
+import type { MilestonePageProps } from "@/types";
 
 const CARD =
   "bg-card rounded-2xl border border-edge shadow-[0_2px_12px_rgba(13,31,64,0.06),0_1px_3px_rgba(13,31,64,0.04)]";
 
-export default function RaiseDispute({ navigate }: PageProps) {
-  const [submitted, setSubmitted] = useState(false);
+export default function RaiseDispute({ navigate, milestoneId, showResult }: MilestonePageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [disputeReason, setDisputeReason] = useState(
@@ -17,9 +16,9 @@ export default function RaiseDispute({ navigate }: PageProps) {
   const [explanation, setExplanation] = useState("");
 
   const { project: PROJECT, raiseDispute, lastDecision } = useTrustPay();
-  const m = PROJECT.milestones[1];
+  const m = PROJECT.milestones.find((item) => item.id === milestoneId)!;
 
-  if (submitted) {
+  if (showResult) {
     return (
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex flex-col items-center text-center pt-4 pb-2">
@@ -46,7 +45,7 @@ export default function RaiseDispute({ navigate }: PageProps) {
             {[
               { label: "Project", value: PROJECT.name },
 
-              { label: "Milestone", value: `Milestone ${m.id}: ${m.name}` },
+              { label: "Milestone", value: `Milestone ${m.sequenceNumber}: ${m.name}` },
 
               { label: "Raised by", value: PROJECT.authorizedApprover },
 
@@ -133,7 +132,7 @@ export default function RaiseDispute({ navigate }: PageProps) {
             Raise Dispute
           </h1>
           <p className="text-muted text-sm mt-1">
-            {PROJECT.name} &middot; Milestone {m.id}: {m.name}
+            {PROJECT.name} &middot; Milestone {m.sequenceNumber}: {m.name}
           </p>
         </div>
       </div>
@@ -271,7 +270,7 @@ export default function RaiseDispute({ navigate }: PageProps) {
                   explanation,
                 })
               ) {
-                setSubmitted(true);
+                navigate("raise-dispute-result");
               } else {
                 setIsSubmitting(false);
               }

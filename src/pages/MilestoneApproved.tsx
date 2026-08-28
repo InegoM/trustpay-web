@@ -1,13 +1,16 @@
 import { fmt } from "@/data/mock";
 import { useTrustPay } from "@/state/TrustPayContext";
-import type { PageProps } from "@/types";
+import type { MilestonePageProps } from "@/types";
 
 const CARD =
   "bg-card rounded-2xl border border-edge shadow-[0_2px_12px_rgba(13,31,64,0.06),0_1px_3px_rgba(13,31,64,0.04)]";
 
-export default function MilestoneApproved({ navigate }: PageProps) {
+export default function MilestoneApproved({ navigate, milestoneId }: MilestonePageProps) {
   const { project: PROJECT, lastDecision } = useTrustPay();
-  const m = PROJECT.milestones[1];
+  const m = PROJECT.milestones.find((item) => item.id === milestoneId)!;
+  const nextMilestone = PROJECT.milestones.find(
+    (item) => item.sequenceNumber > m.sequenceNumber && item.status === "not-started",
+  );
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -48,7 +51,7 @@ export default function MilestoneApproved({ navigate }: PageProps) {
 
             { label: "Customer", value: PROJECT.customer },
 
-            { label: "Milestone", value: `Milestone ${m.id}: ${m.name}` },
+            { label: "Milestone", value: `Milestone ${m.sequenceNumber}: ${m.name}` },
 
             { label: "Milestone value", value: fmt(m.value) },
 
@@ -85,7 +88,7 @@ export default function MilestoneApproved({ navigate }: PageProps) {
         <p className="text-sm text-ink leading-relaxed">
           TrustPay recorded your acceptance of{" "}
           <strong>
-            Milestone {m.id}: {m.name}
+            Milestone {m.sequenceNumber}: {m.name}
           </strong>
           . The submitted evidence, acceptance criteria, and this decision are now permanently on
           record. Any payment associated with this milestone is handled externally.
@@ -104,7 +107,9 @@ export default function MilestoneApproved({ navigate }: PageProps) {
           {[
             "Both parties have received confirmation of this recorded decision.",
 
-            "Milestone 3 (Finishing and handover — AED 27,000) can now proceed.",
+            nextMilestone
+              ? `Milestone ${nextMilestone.sequenceNumber} (${nextMilestone.name} — ${fmt(nextMilestone.value)}) can now proceed.`
+              : "This was the final milestone in the current schedule.",
 
             "Your decision record is available to download below.",
           ].map((item, i) => (
