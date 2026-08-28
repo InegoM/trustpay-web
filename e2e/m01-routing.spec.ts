@@ -161,7 +161,9 @@ test("customer can review an exact agreement version and confirm recorded accept
   await expect(page.getByText("Signed-in account")).toBeVisible();
   await expect(page.locator("#main-content").getByText("Omar Hassan")).toBeVisible();
   await expect(page.getByText("Customer organization")).toBeVisible();
-  await expect(page.locator("#main-content").getByText("Customer Org")).toBeVisible();
+  await expect(
+    page.locator("#main-content").getByText("Customer Org", { exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByText(
       "The server assigns the authoritative UTC timestamp when this acceptance is recorded.",
