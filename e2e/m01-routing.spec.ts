@@ -155,8 +155,18 @@ test("customer can review an exact agreement version and confirm recorded accept
   await expect(page.getByRole("heading", { name: "Review agreement" })).toBeVisible();
   await expect(page.getByText("Dynamic Project Agreement")).toBeVisible();
   await expect(page.getByText("Milestone schedule and acceptance criteria")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Print agreement" })).toBeVisible();
   await page.getByRole("button", { name: "Accept agreement" }).click();
   await expect(page.getByRole("heading", { name: "Confirm recorded acceptance" })).toBeVisible();
+  await expect(page.getByText("Signed-in account")).toBeVisible();
+  await expect(page.locator("#main-content").getByText("Omar Hassan")).toBeVisible();
+  await expect(page.getByText("Customer organization")).toBeVisible();
+  await expect(page.locator("#main-content").getByText("Customer Org")).toBeVisible();
+  await expect(
+    page.getByText(
+      "The server assigns the authoritative UTC timestamp when this acceptance is recorded.",
+    ),
+  ).toBeVisible();
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "Record acceptance" }).click();
   await expect(page.getByRole("heading", { name: "Acceptance recorded" })).toBeVisible();

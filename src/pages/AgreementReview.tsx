@@ -43,7 +43,7 @@ export default function AgreementReview({
   mode = "review",
 }: AgreementPageProps & { mode?: Mode }) {
   const { project, refresh } = useTrustPay();
-  const { canCreateProject, canDecide } = useAuth();
+  const { canCreateProject, canDecide, user } = useAuth();
   const [agreement, setAgreement] = useState<ApiAgreementVersion | null>(null);
   const [history, setHistory] = useState<ApiAgreementVersion[]>([]);
   const [loading, setLoading] = useState(true);
@@ -358,6 +358,33 @@ export default function AgreementReview({
             <strong className="text-ink">{agreement.label}</strong> for {project.name}. The exact
             content hash is {agreement.contentHash.slice(0, 16)}…
           </p>
+          <div className="mt-5 rounded-xl bg-canvas p-4 text-sm text-ink">
+            <dl className="space-y-2">
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted">Signed-in account</dt>
+                <dd className="text-right font-semibold">
+                  {user?.displayName ?? "Current account"}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted">Customer organization</dt>
+                <dd className="text-right font-semibold">{project.customer}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted">Agreement version</dt>
+                <dd className="text-right font-semibold">{agreement.label}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted">Action</dt>
+                <dd className="max-w-64 text-right font-semibold">
+                  Record this customer acceptance in TrustPay
+                </dd>
+              </div>
+            </dl>
+            <p className="mt-4 border-t border-edge pt-3 text-xs text-muted">
+              The server assigns the authoritative UTC timestamp when this acceptance is recorded.
+            </p>
+          </div>
           <label className="mt-6 flex items-start gap-3 rounded-xl bg-canvas p-4 text-sm text-ink">
             <input
               type="checkbox"
@@ -407,9 +434,19 @@ export default function AgreementReview({
             Exact version {agreement.label} · Created {formatDate(agreement.createdAt)} GST
           </p>
         </div>
-        <span className="rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand">
-          {statusLabel(agreement.status)}
-        </span>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="rounded-xl border border-edge px-3 py-2 text-sm font-semibold text-ink hover:bg-canvas"
+            aria-label={`Print agreement ${agreement.label}`}
+          >
+            Print agreement
+          </button>
+          <span className="rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand">
+            {statusLabel(agreement.status)}
+          </span>
+        </div>
       </div>
       <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
         <article className={`${CARD} p-6`}>
