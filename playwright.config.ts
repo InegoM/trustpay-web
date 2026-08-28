@@ -10,6 +10,7 @@ export default defineConfig({
   webServer: {
     command: "pnpm run dev --host 127.0.0.1 --port 4173",
     url: "http://127.0.0.1:4173",
-    reuseExistingServer: false,
+    // CI always starts an isolated server; local verification can reuse Vite started by the developer.
+    reuseExistingServer: !process.env.CI,
   },
 });

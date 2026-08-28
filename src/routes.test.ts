@@ -36,3 +36,19 @@ describe("dynamic project and milestone routes", () => {
     expect(routeFromHash("#/projects/example/milestones/id/unknown").view).toBe("not-found");
   });
 });
+
+it("round-trips stable agreement version routes without using project defaults", () => {
+  const projectId = "agreement-review";
+  const agreementId = "50000000-0000-4000-8000-000000000002";
+  expect(hashForView("agreement-review", { projectId, agreementId })).toBe(
+    `#/projects/${projectId}/agreements/${agreementId}`,
+  );
+  expect(routeFromHash(`#/projects/${projectId}/agreements/${agreementId}/confirm`)).toEqual({
+    view: "agreement-confirm",
+    projectId,
+    agreementId,
+  });
+  expect(routeFromHash(`#/projects/${projectId}/agreements/not-a-uuid`)).toEqual({
+    view: "not-found",
+  });
+});

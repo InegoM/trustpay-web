@@ -40,6 +40,7 @@ export interface ApiProject {
   outstandingValue: number;
   status: "in-progress" | "completed" | "on-hold";
   agreementVersion: string;
+  agreementId?: string;
   agreementStatus: "draft" | "active";
   agreementTitle?: string;
   agreementScope?: string;
@@ -97,12 +98,63 @@ export interface ApiActivityEvent {
     | "customer-invited"
     | "customer-approver-joined"
     | "agreement-accepted"
+    | "agreement-amendment-requested"
+    | "agreement-version-created"
     | "milestone-approved"
     | "evidence-submitted"
     | "changes-requested"
     | "dispute-recorded"
     | "decision-recorded";
   reference?: string;
+}
+
+export interface ApiAgreementMilestone {
+  sequenceNumber: number;
+  name: string;
+  description?: string;
+  value: number;
+  acceptanceCriteria: string[];
+}
+
+export interface ApiAgreementVersion {
+  id: string;
+  versionNumber: number;
+  label: string;
+  status: "draft" | "active" | "superseded" | "amendment-requested";
+  content: {
+    title: string;
+    scope: string;
+    terms: string;
+    currency: string;
+    projectValue: number;
+    milestones: ApiAgreementMilestone[];
+  };
+  contentHash: string;
+  createdAt: string;
+  createdBy: string;
+  acceptance?: {
+    id: string;
+    organization: string;
+    acceptedBy: string;
+    acceptedAt: string;
+    reference: string;
+  };
+  amendmentRequest?: {
+    id: string;
+    reason: string;
+    requestedBy: string;
+    requestedAt: string;
+    reference: string;
+  };
+}
+
+export type AgreementDecisionInput =
+  | { action: "accept"; authorityConfirmed: true; expectedVersionId: string }
+  | { action: "request-amendment"; reason: string; expectedVersionId: string };
+
+export interface AgreementDecisionResult {
+  agreement: ApiAgreementVersion;
+  event: ApiActivityEvent;
 }
 
 export type DecisionInput =
@@ -225,6 +277,42 @@ export function getProject(projectId: string): Promise<ApiProject> {
   return request(`/api/v1/projects/${encodeURIComponent(projectId)}`);
 }
 
+export function listAgreements(projectId: string): Promise<ApiAgreementVersion[]> {
+  return request(`/api/v1/projects/${encodeURIComponent(projectId)}/agreements`);
+}
+
+export function getAgreement(projectId: string, agreementId: string): Promise<ApiAgreementVersion> {
+  return request(
+    `/api/v1/projects/${encodeURIComponent(projectId)}/agreements/${encodeURIComponent(agreementId)}`,
+  );
+}
+
+export function createAgreementVersion(
+  projectId: string,
+  input: { baseVersionId: string; title: string; scope: string; terms: string },
+): Promise<ApiAgreementVersion> {
+  return request(`/api/v1/projects/${encodeURIComponent(projectId)}/agreements`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function recordAgreementDecision(
+  projectId: string,
+  agreementId: string,
+  decision: AgreementDecisionInput,
+  idempotencyKey: string,
+): Promise<AgreementDecisionResult> {
+  return request(
+    `/api/v1/projects/${encodeURIComponent(projectId)}/agreements/${encodeURIComponent(agreementId)}/decisions`,
+    {
+      method: "POST",
+      headers: { "Idempotency-Key": idempotencyKey },
+      body: JSON.stringify(decision),
+    },
+  );
+}
+
 export function listProjects(): Promise<ApiProject[]> {
   return request("/api/v1/projects");
 }
@@ -312,6 +400,7 @@ export function projectFromApi(api: ApiProject, current?: ProjectRecord): Projec
           ? "On hold"
           : "Completed",
     agreementVersion: api.agreementVersion,
+    ...(api.agreementId ? { agreementId: api.agreementId } : {}),
     agreementStatus: api.agreementStatus,
     ...(api.agreementTitle ? { agreementTitle: api.agreementTitle } : {}),
     ...(api.agreementScope ? { agreementScope: api.agreementScope } : {}),

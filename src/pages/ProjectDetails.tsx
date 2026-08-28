@@ -302,6 +302,19 @@ export default function ProjectDetails({ navigate }: PageProps) {
                 )}
               </div>
             )}
+            {PROJECT.agreementId && (
+              <button
+                onClick={() =>
+                  navigate("agreement-review", {
+                    projectId: PROJECT.id,
+                    agreementId: PROJECT.agreementId,
+                  })
+                }
+                className="mt-4 w-full rounded-xl border border-brand/30 px-3 py-2 text-sm font-semibold text-brand hover:bg-brand-light"
+              >
+                View agreement version
+              </button>
+            )}
           </div>
 
           {/* Variations */}

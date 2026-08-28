@@ -23,6 +23,8 @@ export type EventType =
   | "customer-invited"
   | "customer-approver-joined"
   | "agreement-accepted"
+  | "agreement-amendment-requested"
+  | "agreement-version-created"
   | "agreement-sent"
   | "evidence-submitted"
   | "milestone-approved"
@@ -97,6 +99,7 @@ export interface ProjectRecord {
   outstandingValue: number;
   status: string;
   agreementVersion: string;
+  agreementId?: string;
   agreementStatus: "draft" | "active";
   agreementTitle?: string;
   agreementScope?: string;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import Activity from "@/pages/Activity";
+import AgreementReview from "@/pages/AgreementReview";
 import ConfirmApproval from "@/pages/ConfirmApproval";
 import InviteCustomer from "@/pages/InviteCustomer";
 import Login from "@/pages/Login";
@@ -69,6 +70,7 @@ function AppContent() {
     const nextHash = hashForView(view, {
       projectId: params.projectId ?? route.projectId ?? project.id,
       milestoneId: params.milestoneId ?? route.milestoneId,
+      agreementId: params.agreementId ?? route.agreementId,
     });
     window.location.hash = nextHash.slice(1);
   };
@@ -78,7 +80,13 @@ function AppContent() {
   const milestone = route.milestoneId
     ? project.milestones.find((item) => item.id === route.milestoneId)
     : undefined;
-  const decisionViews: View[] = ["confirm-approval", "request-changes", "raise-dispute"];
+  const decisionViews: View[] = [
+    "confirm-approval",
+    "request-changes",
+    "raise-dispute",
+    "agreement-confirm",
+    "agreement-amendment",
+  ];
   const layoutView = projectRoutePending ? "projects" : view;
 
   let content;
@@ -140,6 +148,26 @@ function AppContent() {
   else if (view === "new-project") content = <NewProject navigate={navigate} />;
   else if (view === "project-details") content = <ProjectDetails navigate={navigate} />;
   else if (view === "invite-customer") content = <InviteCustomer navigate={navigate} />;
+  else if (view === "agreement-review")
+    content = <AgreementReview navigate={navigate} agreementId={route.agreementId!} />;
+  else if (view === "agreement-confirm")
+    content = (
+      <AgreementReview navigate={navigate} agreementId={route.agreementId!} mode="confirm" />
+    );
+  else if (view === "agreement-receipt")
+    content = (
+      <AgreementReview navigate={navigate} agreementId={route.agreementId!} mode="receipt" />
+    );
+  else if (view === "agreement-amendment")
+    content = (
+      <AgreementReview
+        navigate={navigate}
+        agreementId={route.agreementId!}
+        mode="request-amendment"
+      />
+    );
+  else if (view === "agreement-amend")
+    content = <AgreementReview navigate={navigate} agreementId={route.agreementId!} mode="amend" />;
   else if (view === "milestone-review")
     content = <MilestoneReview navigate={navigate} milestoneId={route.milestoneId!} />;
   else if (view === "confirm-approval")
