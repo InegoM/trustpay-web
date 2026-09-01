@@ -13,9 +13,8 @@ export type MilestoneStatus =
   | "awaiting-decision"
   | "changes-requested"
   | "disputed"
+  | "in-progress"
   | "not-started";
-export type EvidenceType = "image" | "pdf" | "document";
-
 export type ActorType = "sme" | "customer" | "system";
 
 export type EventType =
@@ -32,18 +31,6 @@ export type EventType =
   | "decision-recorded"
   | "changes-requested"
   | "dispute-recorded";
-
-export interface EvidenceItem {
-  id: number;
-
-  name: string;
-
-  type: EvidenceType;
-
-  uploadedAt: string;
-
-  uploadedBy: string;
-}
 
 export interface Milestone {
   id: string;
@@ -66,9 +53,9 @@ export interface Milestone {
 
   criteria?: string[];
 
-  requiredEvidence?: string[];
+  criteriaDetailed?: Array<{ id: string; position: number; description: string }>;
 
-  submittedEvidence?: EvidenceItem[];
+  requiredEvidence?: string[];
 }
 
 export interface ActivityEvent {
@@ -150,40 +137,6 @@ const MILESTONE_2: Milestone = {
     "Updated electrical layout",
 
     "Inspection checklist",
-  ],
-
-  submittedEvidence: [
-    {
-      id: 1,
-      name: "Site progress photographs",
-      type: "image",
-      uploadedAt: "20 Aug 2026, 9:14 AM GST",
-      uploadedBy: "Nadia Rahman",
-    },
-
-    {
-      id: 2,
-      name: "Electrical rough-in close-ups",
-      type: "image",
-      uploadedAt: "20 Aug 2026, 9:18 AM GST",
-      uploadedBy: "Nadia Rahman",
-    },
-
-    {
-      id: 3,
-      name: "Updated layout document",
-      type: "pdf",
-      uploadedAt: "20 Aug 2026, 9:22 AM GST",
-      uploadedBy: "Nadia Rahman",
-    },
-
-    {
-      id: 4,
-      name: "Inspection checklist",
-      type: "pdf",
-      uploadedAt: "20 Aug 2026, 9:25 AM GST",
-      uploadedBy: "Nadia Rahman",
-    },
   ],
 };
 

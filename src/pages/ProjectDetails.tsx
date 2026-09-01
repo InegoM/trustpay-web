@@ -12,6 +12,7 @@ const milestoneStatusLabel: Record<string, string> = {
   "changes-requested": "Changes requested",
   disputed: "Disputed",
   "not-started": "Not started",
+  "in-progress": "Evidence in progress",
 };
 
 const milestoneStatusStyle: Record<string, string> = {
@@ -20,6 +21,7 @@ const milestoneStatusStyle: Record<string, string> = {
   "changes-requested": "bg-warn-light text-warn",
   disputed: "bg-danger-light text-danger",
   "not-started": "bg-edge text-muted",
+  "in-progress": "bg-brand-light text-brand",
 };
 
 export default function ProjectDetails({ navigate }: PageProps) {
@@ -204,7 +206,10 @@ export default function ProjectDetails({ navigate }: PageProps) {
                           </p>
                         )}
                         {m.status === "not-started" && (
-                          <p className="text-xs text-muted mt-1">Pending previous milestone</p>
+                          <p className="text-xs text-muted mt-1">Evidence package not started</p>
+                        )}
+                        {m.status === "in-progress" && (
+                          <p className="text-xs text-brand mt-1">Private draft evidence package</p>
                         )}
                         {m.status === "changes-requested" && (
                           <p className="text-xs text-warn mt-1">
@@ -233,9 +238,13 @@ export default function ProjectDetails({ navigate }: PageProps) {
                       >
                         {m.status === "awaiting-decision"
                           ? "Open customer review"
-                          : m.status === "changes-requested"
-                            ? "View request"
-                            : "View milestone"}
+                          : m.status === "in-progress" || m.status === "not-started"
+                            ? canCreateProject
+                              ? "Add evidence"
+                              : "View milestone"
+                            : m.status === "changes-requested"
+                              ? "View request"
+                              : "View milestone"}
                       </button>
                     </div>
                   </div>
