@@ -17,6 +17,13 @@ const milestones = [
     status: "awaiting-decision",
     responseDeadline: "2026-08-30T17:00:00+04:00",
     acceptanceCriteria: ["Work matches the agreed scope"],
+    acceptanceCriteriaDetailed: [
+      {
+        id: "31000000-0000-4000-8000-000000000001",
+        position: 1,
+        description: "Work matches the agreed scope",
+      },
+    ],
   },
   {
     id: "30000000-0000-4000-8000-000000000003",
@@ -67,18 +74,55 @@ const agreement = {
   createdBy: "Nadia Rahman",
 };
 
-async function mockApi(page: Page) {
+const evidenceSubmission = {
+  id: "60000000-0000-4000-8000-000000000001",
+  projectId,
+  milestoneId: milestones[1].id,
+  milestoneSequenceNumber: 2,
+  milestoneName: "Build",
+  submissionNumber: 1,
+  status: "submitted",
+  notes: "Completed work is ready for customer review.",
+  createdAt: "2026-08-29T08:00:00.000Z",
+  submittedAt: "2026-08-29T09:00:00.000Z",
+  submittedBy: "Nadia Rahman",
+  agreementVersionId: project.agreementId,
+  agreementVersion: "v1.0",
+  canEdit: false,
+  evidence: [
+    {
+      id: "61000000-0000-4000-8000-000000000001",
+      originalName: "completed-work.png",
+      mimeType: "image/png",
+      detectedMimeType: "image/png",
+      sizeBytes: 245000,
+      sha256: "a".repeat(64),
+      scanStatus: "clean",
+      description: "Wide-angle view of the completed work.",
+      acceptanceCriterionId: "31000000-0000-4000-8000-000000000001",
+      acceptanceCriterion: "Work matches the agreed scope",
+      uploadedBy: "Nadia Rahman",
+      uploadedAt: "2026-08-29T08:45:00.000Z",
+      downloadPath: "/private-download",
+    },
+  ],
+};
+
+async function mockApi(page: Page, actor: "customer" | "sme" = "customer") {
+  let draft: typeof evidenceSubmission | null = null;
   await page.route("http://localhost:3001/api/v1/**", async (route) => {
     const path = new URL(route.request().url()).pathname;
     if (path === "/api/v1/me") {
       return route.fulfill({
         json: {
           data: {
-            id: "user-1",
-            email: "omar@example.test",
-            displayName: "Omar Hassan",
+            id: actor === "customer" ? "user-1" : "user-2",
+            email: actor === "customer" ? "omar@example.test" : "nadia@example.test",
+            displayName: actor === "customer" ? "Omar Hassan" : "Nadia Rahman",
             organizations: [
-              { id: "org-1", name: "Customer Org", type: "CUSTOMER", role: "APPROVER" },
+              actor === "customer"
+                ? { id: "org-1", name: "Customer Org", type: "CUSTOMER", role: "APPROVER" }
+                : { id: "org-2", name: "SME Org", type: "SME", role: "OWNER" },
             ],
           },
         },
@@ -90,6 +134,52 @@ async function mockApi(page: Page) {
     }
     if (path === `/api/v1/projects/${projectId}/activity`) {
       return route.fulfill({ json: { data: [] } });
+    }
+    const submissionsMatch = path.match(
+      new RegExp(`^/api/v1/projects/${projectId}/milestones/([^/]+)/submissions$`),
+    );
+    if (submissionsMatch && route.request().method() === "GET") {
+      return route.fulfill({
+        json: {
+          data:
+            submissionsMatch[1] === milestones[1].id ? [evidenceSubmission] : draft ? [draft] : [],
+        },
+      });
+    }
+    if (submissionsMatch && route.request().method() === "POST" && actor === "sme") {
+      draft = {
+        ...evidenceSubmission,
+        id: "60000000-0000-4000-8000-000000000002",
+        milestoneId: milestones[2].id,
+        milestoneSequenceNumber: 3,
+        milestoneName: "Handover",
+        status: "draft",
+        notes: undefined,
+        submittedAt: undefined,
+        canEdit: true,
+        evidence: [],
+      };
+      return route.fulfill({ status: 201, json: { data: draft } });
+    }
+    if (draft && path.endsWith(`/${draft.id}/evidence`) && route.request().method() === "POST") {
+      const uploaded = {
+        ...evidenceSubmission.evidence[0],
+        id: "61000000-0000-4000-8000-000000000002",
+        originalName: "handover.png",
+        acceptanceCriterionId: undefined,
+        acceptanceCriterion: undefined,
+      };
+      draft = { ...draft, evidence: [uploaded] };
+      return route.fulfill({ status: 201, json: { data: uploaded } });
+    }
+    if (draft && path.endsWith(`/${draft.id}/submit`) && route.request().method() === "POST") {
+      draft = {
+        ...draft,
+        status: "submitted",
+        submittedAt: "2026-08-30T09:00:00.000Z",
+        canEdit: false,
+      };
+      return route.fulfill({ status: 201, json: { data: draft } });
     }
     if (path === `/api/v1/projects/${projectId}/agreements`) {
       if (route.request().method() === "GET") return route.fulfill({ json: { data: [agreement] } });
@@ -141,11 +231,73 @@ test("refreshes a nested stable-ID route and keeps every milestone addressable",
 }) => {
   for (const milestone of milestones) {
     await page.goto(`/#/projects/${projectId}/milestones/${milestone.id}/review`);
-    await expect(page.getByRole("heading", { name: "Review Milestone" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: milestone.name })).toBeVisible();
     await expect(page.getByText(`Milestone ${milestone.sequenceNumber} of 3`)).toBeVisible();
   }
   await page.reload();
   await expect(page.getByText("Milestone 3 of 3")).toBeVisible();
+});
+
+test("customer sees only the submitted immutable evidence package", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto(`/#/projects/${projectId}/milestones/${milestones[1].id}/review`);
+  await expect(page.getByText("Submitted — read only")).toBeVisible();
+  await expect(page.getByText("completed-work.png")).toBeVisible();
+  await expect(page.getByText("Linked to: Work matches the agreed scope")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Remove" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Approve milestone" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true,
+  );
+});
+
+test("SME starts, uploads and immutably submits an evidence package", async ({ page }) => {
+  await page.unrouteAll();
+  await mockApi(page, "sme");
+  await page.goto(`/#/projects/${projectId}/milestones/${milestones[2].id}/review`);
+  await page.getByRole("button", { name: "Start evidence package" }).click();
+  await expect(page.getByRole("heading", { name: "Add evidence" })).toBeVisible();
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "handover.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+      "base64",
+    ),
+  });
+  await page.getByRole("button", { name: "Upload evidence" }).click();
+  await expect(page.getByText("handover.png")).toBeVisible();
+  await page.getByRole("button", { name: "Review and submit" }).click();
+  await expect(page.getByRole("heading", { name: "Submit evidence package?" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Go back" })).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(page.getByRole("button", { name: "Submit package" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("button", { name: "Go back" })).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("heading", { name: "Submit evidence package?" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Review and submit" })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { name: "Submit evidence package?" })).toBeVisible();
+  await page.getByRole("button", { name: "Submit package" }).click();
+  await expect(page.getByText("Submitted — read only")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Remove" })).toHaveCount(0);
+});
+
+test("SME gets clear client-side guidance for a rejected evidence type", async ({ page }) => {
+  await page.unrouteAll();
+  await mockApi(page, "sme");
+  await page.goto(`/#/projects/${projectId}/milestones/${milestones[2].id}/review`);
+  await page.getByRole("button", { name: "Start evidence package" }).click();
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "handover.exe",
+    mimeType: "application/octet-stream",
+    buffer: Buffer.from("not an executable"),
+  });
+  await page.getByRole("button", { name: "Upload evidence" }).click();
+  await expect(
+    page.getByText("Choose a JPEG, PNG, or PDF file. Other file types are not accepted."),
+  ).toBeVisible();
 });
 
 test("customer can review an exact agreement version and confirm recorded acceptance", async ({

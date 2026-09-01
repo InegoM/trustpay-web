@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { listSubmissions, type ApiMilestoneSubmission } from "@/api/trustpay";
 import { fmt } from "@/data/mock";
 import { useTrustPay } from "@/state/TrustPayContext";
 import type { MilestonePageProps } from "@/types";
@@ -12,6 +13,27 @@ export default function ConfirmApproval({ navigate, milestoneId }: MilestonePage
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { project: PROJECT, approveMilestone } = useTrustPay();
   const m = PROJECT.milestones.find((item) => item.id === milestoneId)!;
+  const [submission, setSubmission] = useState<ApiMilestoneSubmission | null>(null);
+  const [evidenceError, setEvidenceError] = useState<string | null>(null);
+  const [evidenceLoading, setEvidenceLoading] = useState(true);
+
+  useEffect(() => {
+    setEvidenceLoading(true);
+    setEvidenceError(null);
+    void listSubmissions(PROJECT.id, milestoneId)
+      .then((items) => {
+        const submitted = items.find((item) => item.status === "submitted") ?? null;
+        setSubmission(submitted);
+        if (!submitted) setEvidenceError("The submitted evidence package is unavailable.");
+      })
+      .catch((cause) => {
+        setSubmission(null);
+        setEvidenceError(
+          cause instanceof Error ? cause.message : "The evidence package could not be loaded.",
+        );
+      })
+      .finally(() => setEvidenceLoading(false));
+  }, [PROJECT.id, milestoneId]);
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -100,7 +122,16 @@ export default function ConfirmApproval({ navigate, milestoneId }: MilestonePage
           Evidence reviewed
         </h2>
         <ul className="space-y-2">
-          {m.submittedEvidence?.map((ev) => (
+          {evidenceLoading && <li className="text-sm text-muted">Loading submitted evidence…</li>}
+          {evidenceError && (
+            <li
+              className="rounded-xl border border-danger/30 bg-danger-light p-3 text-sm text-danger"
+              role="alert"
+            >
+              {evidenceError} Return to the review screen and retry before approving.
+            </li>
+          )}
+          {submission?.evidence.map((ev) => (
             <li
               key={ev.id}
               className="flex items-center gap-3 text-sm py-1.5 px-3 rounded-xl bg-edge/40"
@@ -114,8 +145,13 @@ export default function ConfirmApproval({ navigate, milestoneId }: MilestonePage
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="text-ink">{ev.name}</span>
-              <span className="text-muted text-xs ml-auto">{ev.uploadedAt}</span>
+              <span className="text-ink">{ev.originalName}</span>
+              <span className="text-muted text-xs ml-auto">
+                {new Intl.DateTimeFormat("en-AE", {
+                  dateStyle: "medium",
+                  timeZone: "Asia/Dubai",
+                }).format(new Date(ev.uploadedAt))}
+              </span>
             </li>
           ))}
         </ul>
@@ -196,7 +232,7 @@ export default function ConfirmApproval({ navigate, milestoneId }: MilestonePage
         </button>
         <button
           onClick={async () => {
-            if (!checked || isSubmitting) return;
+            if (!checked || !submission || evidenceLoading || evidenceError || isSubmitting) return;
             setIsSubmitting(true);
             if (await approveMilestone(m.id)) {
               navigate("milestone-approved");
@@ -204,13 +240,17 @@ export default function ConfirmApproval({ navigate, milestoneId }: MilestonePage
               setIsSubmitting(false);
             }
           }}
-          disabled={!checked || isSubmitting}
+          disabled={
+            !checked || !submission || evidenceLoading || Boolean(evidenceError) || isSubmitting
+          }
           className={`flex-1 px-5 py-3 text-sm font-semibold rounded-xl transition-all ${
-            checked && !isSubmitting
+            checked && submission && !evidenceLoading && !evidenceError && !isSubmitting
               ? "bg-brand text-white hover:bg-brand/90 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
               : "bg-edge text-muted cursor-not-allowed"
           }`}
-          aria-disabled={!checked || isSubmitting}
+          aria-disabled={
+            !checked || !submission || evidenceLoading || Boolean(evidenceError) || isSubmitting
+          }
         >
           {isSubmitting ? "Recording approval…" : "Confirm approval"}
         </button>

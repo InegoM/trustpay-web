@@ -30,9 +30,17 @@ The local development server listens on port 8443. Run the API database setup an
 
 ```powershell
 pnpm run typecheck
+pnpm test
 pnpm run format:check
 pnpm run build
 pnpm run check
+pnpm run test:e2e
 ```
 
-There is no frontend automated test harness in the established baseline. M00 does not add one; browser smoke, responsive, and keyboard verification are documented in `docs/m00-baseline.md`. CI runs type checking, formatting, build, dependency auditing, and secret scanning.
+Vitest covers stable route behavior and Playwright covers authenticated routing/browser behavior. CI runs type checking, tests, formatting, build, dependency auditing, and secret scanning.
+
+## M03 evidence workflow
+
+The existing milestone route is role-aware. SME owners/admins can start a private draft, upload JPEG/PNG/PDF evidence with progress, link files to stable acceptance-criterion IDs, add notes, retry/remove draft files, and confirm an irreversible submission. Customers see only submitted packages and download evidence through the authenticated API before using the existing decision actions. Draft, empty, loading, error, retry, immutable, and read-only states are explicit; no public storage URL is rendered.
+
+The page is desktop-first at this milestone but remains usable in a single-column mobile layout. Native file input supports the device photo/file picker. TrustPay does not claim that uploading or submitting evidence moves, releases, or protects money.

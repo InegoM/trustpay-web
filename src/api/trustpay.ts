@@ -24,10 +24,46 @@ export interface ApiMilestone {
   status: MilestoneStatus;
   description?: string;
   acceptanceCriteria?: string[];
+  acceptanceCriteriaDetailed?: Array<{ id: string; position: number; description: string }>;
   submittedBy?: string;
   submittedAt?: string;
   responseDeadline?: string;
   completedAt?: string;
+}
+
+export interface ApiEvidenceItem {
+  id: string;
+  originalName: string;
+  mimeType: string;
+  detectedMimeType: string;
+  sizeBytes: number;
+  sha256: string;
+  scanStatus: "pending" | "clean" | "infected" | "error";
+  description?: string;
+  acceptanceCriterionId?: string;
+  acceptanceCriterion?: string;
+  uploadedBy: string;
+  uploadedAt: string;
+  capturedAt?: string;
+  downloadPath: string;
+}
+
+export interface ApiMilestoneSubmission {
+  id: string;
+  projectId: string;
+  milestoneId: string;
+  milestoneSequenceNumber: number;
+  milestoneName: string;
+  submissionNumber: number;
+  status: "draft" | "submitted";
+  notes?: string;
+  createdAt: string;
+  submittedAt?: string;
+  submittedBy: string;
+  agreementVersionId: string;
+  agreementVersion: string;
+  evidence: ApiEvidenceItem[];
+  canEdit: boolean;
 }
 
 export interface ApiProject {
@@ -342,6 +378,144 @@ export function getProjectActivity(projectId: string): Promise<ApiActivityEvent[
   return request(`/api/v1/projects/${encodeURIComponent(projectId)}/activity`);
 }
 
+function submissionBase(projectId: string, milestoneId: string): string {
+  return `/api/v1/projects/${encodeURIComponent(projectId)}/milestones/${encodeURIComponent(milestoneId)}/submissions`;
+}
+
+export function createSubmission(
+  projectId: string,
+  milestoneId: string,
+  notes = "",
+): Promise<ApiMilestoneSubmission> {
+  return request(submissionBase(projectId, milestoneId), {
+    method: "POST",
+    body: JSON.stringify({ ...(notes ? { notes } : {}) }),
+  });
+}
+
+export function listSubmissions(
+  projectId: string,
+  milestoneId: string,
+): Promise<ApiMilestoneSubmission[]> {
+  return request(submissionBase(projectId, milestoneId));
+}
+
+export function updateSubmissionNotes(
+  projectId: string,
+  milestoneId: string,
+  submissionId: string,
+  notes: string,
+): Promise<ApiMilestoneSubmission> {
+  return request(`${submissionBase(projectId, milestoneId)}/${encodeURIComponent(submissionId)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ notes }),
+  });
+}
+
+export function uploadEvidence(
+  projectId: string,
+  milestoneId: string,
+  submissionId: string,
+  input: {
+    file: File;
+    description?: string;
+    acceptanceCriterionId?: string;
+    capturedAt?: string;
+  },
+  onProgress: (percent: number) => void,
+): Promise<ApiEvidenceItem> {
+  return new Promise((resolve, reject) => {
+    const form = new FormData();
+    if (input.description) form.append("description", input.description);
+    if (input.acceptanceCriterionId)
+      form.append("acceptanceCriterionId", input.acceptanceCriterionId);
+    if (input.capturedAt) form.append("capturedAt", input.capturedAt);
+    form.append("file", input.file);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open(
+      "POST",
+      `${API_BASE_URL}${submissionBase(projectId, milestoneId)}/${encodeURIComponent(submissionId)}/evidence`,
+    );
+    xhr.withCredentials = true;
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) onProgress(Math.round((event.loaded / event.total) * 100));
+    };
+    xhr.onerror = () => reject(new TrustPayApiError("Evidence upload failed.", 0, "UPLOAD_FAILED"));
+    xhr.onload = () => {
+      const body = JSON.parse(xhr.responseText || "{}") as
+        | ApiEnvelope<ApiEvidenceItem>
+        | ApiErrorEnvelope;
+      if (xhr.status < 200 || xhr.status >= 300) {
+        const error = "error" in body ? body.error : undefined;
+        reject(
+          new TrustPayApiError(
+            error?.message ?? "Evidence upload failed.",
+            xhr.status,
+            error?.code ?? "UPLOAD_FAILED",
+          ),
+        );
+        return;
+      }
+      resolve((body as ApiEnvelope<ApiEvidenceItem>).data);
+    };
+    xhr.send(form);
+  });
+}
+
+export async function removeEvidence(
+  projectId: string,
+  milestoneId: string,
+  submissionId: string,
+  evidenceId: string,
+): Promise<void> {
+  const response = await fetch(
+    `${API_BASE_URL}${submissionBase(projectId, milestoneId)}/${encodeURIComponent(submissionId)}/evidence/${encodeURIComponent(evidenceId)}`,
+    { method: "DELETE", credentials: "include" },
+  );
+  if (!response.ok) {
+    const body = (await response.json().catch(() => ({}))) as ApiErrorEnvelope;
+    throw new TrustPayApiError(
+      body.error?.message ?? "Evidence could not be removed.",
+      response.status,
+      body.error?.code ?? "DELETE_FAILED",
+    );
+  }
+}
+
+export function submitEvidencePackage(
+  projectId: string,
+  milestoneId: string,
+  submissionId: string,
+  idempotencyKey: string,
+): Promise<ApiMilestoneSubmission> {
+  return request(
+    `${submissionBase(projectId, milestoneId)}/${encodeURIComponent(submissionId)}/submit`,
+    { method: "POST", headers: { "Idempotency-Key": idempotencyKey }, body: "{}" },
+  );
+}
+
+export async function downloadEvidence(
+  projectId: string,
+  milestoneId: string,
+  submissionId: string,
+  evidenceId: string,
+): Promise<Blob> {
+  const response = await fetch(
+    `${API_BASE_URL}${submissionBase(projectId, milestoneId)}/${encodeURIComponent(submissionId)}/evidence/${encodeURIComponent(evidenceId)}/download`,
+    { credentials: "include" },
+  );
+  if (!response.ok) {
+    const body = (await response.json().catch(() => ({}))) as ApiErrorEnvelope;
+    throw new TrustPayApiError(
+      body.error?.message ?? "Evidence could not be downloaded.",
+      response.status,
+      body.error?.code ?? "DOWNLOAD_FAILED",
+    );
+  }
+  return response.blob();
+}
+
 export function recordDecision(
   projectId: string,
   milestoneId: string,
@@ -379,8 +553,8 @@ function mergeMilestone(api: ApiMilestone, current?: Milestone): Milestone {
     ...(api.submittedBy ? { submittedBy: api.submittedBy } : {}),
     ...(api.responseDeadline ? { deadline: formatDate(api.responseDeadline, true) } : {}),
     criteria: api.acceptanceCriteria ?? current?.criteria ?? [],
+    criteriaDetailed: api.acceptanceCriteriaDetailed ?? [],
     requiredEvidence: current?.requiredEvidence ?? [],
-    submittedEvidence: current?.submittedEvidence ?? [],
   };
 }
 
