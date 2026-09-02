@@ -295,6 +295,11 @@ export default function MilestoneReview({ navigate, milestoneId }: MilestonePage
             <p className="mt-1 text-sm text-muted">
               {project.name} · {fmt(milestone.value)}
             </p>
+            {submission && (
+              <p className="mt-1 text-xs font-medium text-muted">
+                Submission #{submission.submissionNumber}
+              </p>
+            )}
           </div>
         </div>
         <span className="w-fit rounded-full bg-brand-light px-3 py-1.5 text-xs font-semibold text-brand">
