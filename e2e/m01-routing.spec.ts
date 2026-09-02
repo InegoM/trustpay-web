@@ -108,8 +108,37 @@ const evidenceSubmission = {
   ],
 };
 
-async function mockApi(page: Page, actor: "customer" | "sme" = "customer") {
+const changeRequestSubmission = {
+  ...evidenceSubmission,
+  decision: {
+    id: "70000000-0000-4000-8000-000000000001",
+    action: "request-changes" as const,
+    decidedBy: "Omar Hassan",
+    decidedAt: "2026-08-30T10:00:00.000Z",
+    reference: "TP-DEC-TEST-0001",
+  },
+  changeRequest: {
+    id: "71000000-0000-4000-8000-000000000001",
+    reasonCategory: "Work does not meet acceptance criteria",
+    requiredChanges: "Relocate the outlet boxes and upload close-up evidence after correction.",
+    reason: "Work does not meet acceptance criteria",
+    comment: "Relocate the outlet boxes and upload close-up evidence after correction.",
+    responseDueAt: "2026-09-02T12:00:00.000Z",
+    requestedBy: "Omar Hassan",
+    requestedAt: "2026-08-30T10:00:00.000Z",
+    decisionReference: "TP-DEC-TEST-0001",
+    acceptanceCriterionIds: ["31000000-0000-4000-8000-000000000001"],
+    evidenceItemIds: ["61000000-0000-4000-8000-000000000001"],
+  },
+};
+
+async function mockApi(
+  page: Page,
+  actor: "customer" | "sme" = "customer",
+  scenario: "standard" | "changes-requested" = "standard",
+) {
   let draft: typeof evidenceSubmission | null = null;
+  let resubmission: typeof changeRequestSubmission | null = null;
   await page.route("http://localhost:3001/api/v1/**", async (route) => {
     const path = new URL(route.request().url()).pathname;
     if (path === "/api/v1/me") {
@@ -142,9 +171,49 @@ async function mockApi(page: Page, actor: "customer" | "sme" = "customer") {
       return route.fulfill({
         json: {
           data:
-            submissionsMatch[1] === milestones[1].id ? [evidenceSubmission] : draft ? [draft] : [],
+            submissionsMatch[1] === milestones[1].id
+              ? scenario === "changes-requested"
+                ? [resubmission ?? changeRequestSubmission]
+                : [evidenceSubmission]
+              : draft
+                ? [draft]
+                : [],
         },
       });
+    }
+    if (
+      path === `/api/v1/projects/${projectId}/milestones/${milestones[1].id}/change-requests` &&
+      route.request().method() === "GET"
+    ) {
+      return route.fulfill({
+        json: {
+          data: scenario === "changes-requested" ? [changeRequestSubmission.changeRequest] : [],
+        },
+      });
+    }
+    if (
+      path ===
+        `/api/v1/projects/${projectId}/milestones/${milestones[1].id}/change-requests/${changeRequestSubmission.changeRequest.id}/respond` &&
+      route.request().method() === "POST"
+    ) {
+      expect(route.request().headers()["idempotency-key"]).toBeTruthy();
+      resubmission = {
+        ...changeRequestSubmission,
+        id: "60000000-0000-4000-8000-000000000003",
+        submissionNumber: 2,
+        status: "draft",
+        submittedAt: undefined,
+        canEdit: true,
+        evidence: [],
+        responseToChangeRequest: {
+          id: "72000000-0000-4000-8000-000000000001",
+          changeRequestId: changeRequestSubmission.changeRequest.id,
+          response: "The outlet boxes will be relocated and photographed.",
+          respondedBy: "Nadia Rahman",
+          respondedAt: "2026-08-30T12:00:00.000Z",
+        },
+      };
+      return route.fulfill({ status: 201, json: { data: resubmission } });
     }
     if (submissionsMatch && route.request().method() === "POST" && actor === "sme") {
       draft = {
@@ -183,6 +252,45 @@ async function mockApi(page: Page, actor: "customer" | "sme" = "customer") {
     }
     if (path === `/api/v1/projects/${projectId}/agreements`) {
       if (route.request().method() === "GET") return route.fulfill({ json: { data: [agreement] } });
+    }
+    if (
+      path === `/api/v1/projects/${projectId}/milestones/${milestones[1].id}/decisions` &&
+      route.request().method() === "POST"
+    ) {
+      const body = route.request().postDataJSON();
+      expect(body).toMatchObject({
+        action: "request-changes",
+        acceptanceCriterionIds: ["31000000-0000-4000-8000-000000000001"],
+        evidenceItemIds: ["61000000-0000-4000-8000-000000000001"],
+      });
+      return route.fulfill({
+        status: 201,
+        json: {
+          data: {
+            project: {
+              ...project,
+              milestones: project.milestones.map((item) =>
+                item.id === milestones[1].id ? { ...item, status: "changes-requested" } : item,
+              ),
+            },
+            milestone: { ...milestones[1], status: "changes-requested" },
+            events: [
+              {
+                id: "event-change-request",
+                projectId,
+                milestoneId: milestones[1].id,
+                milestoneSequenceNumber: 2,
+                actor: "Omar Hassan",
+                actorType: "customer",
+                occurredAt: "2026-08-30T10:00:00.000Z",
+                description: "Changes requested",
+                type: "changes-requested",
+                reference: "TP-DEC-TEST-0001",
+              },
+            ],
+          },
+        },
+      });
     }
     if (path === `/api/v1/projects/${projectId}/agreements/${project.agreementId}`) {
       if (route.request().method() === "GET") return route.fulfill({ json: { data: agreement } });
@@ -298,6 +406,52 @@ test("SME gets clear client-side guidance for a rejected evidence type", async (
   await expect(
     page.getByText("Choose a JPEG, PNG, or PDF file. Other file types are not accepted."),
   ).toBeVisible();
+});
+
+test("customer records a structured, confirmed change request against the submitted version", async ({
+  page,
+}) => {
+  await page.goto(`/#/projects/${projectId}/milestones/${milestones[1].id}/review`);
+  await page.getByRole("button", { name: "Request changes" }).click();
+  await expect(page.getByRole("heading", { name: "Request changes" })).toBeVisible();
+  await page
+    .getByLabel("Required changes *")
+    .fill("Relocate the outlet boxes and add close-up evidence.");
+  await page.getByLabel("Requested response date *").fill("2026-09-02");
+  await page.getByLabel("1. Work matches the agreed scope").check();
+  await page.getByLabel("completed-work.png").check();
+  await page.getByRole("button", { name: "Review change request" }).click();
+  await expect(page.getByRole("heading", { name: "Record this change request?" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Go back" })).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(page.getByRole("button", { name: "Record request" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("button", { name: "Go back" })).toBeFocused();
+  await page.getByRole("button", { name: "Record request" }).click();
+  await expect(
+    page.getByRole("heading", { name: "The SME can now respond and resubmit" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("The original evidence package remains available in the project record."),
+  ).toBeVisible();
+});
+
+test("SME records a response and gets a new corrected evidence package", async ({ page }) => {
+  await page.unrouteAll();
+  await mockApi(page, "sme", "changes-requested");
+  await page.goto(`/#/projects/${projectId}/milestones/${milestones[1].id}/review`);
+  await expect(
+    page.getByRole("heading", { name: "Changes requested for Submission #1" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Relocate the outlet boxes and upload close-up evidence after correction."),
+  ).toBeVisible();
+  await page
+    .getByLabel("Your response")
+    .fill("The outlet boxes will be relocated and photographed.");
+  await page.getByRole("button", { name: "Record response and start corrected package" }).click();
+  await expect(page.getByRole("heading", { name: "Add evidence" })).toBeVisible();
+  await expect(page.getByText("Submission #2")).toBeVisible();
 });
 
 test("customer can review an exact agreement version and confirm recorded acceptance", async ({

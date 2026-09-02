@@ -58,7 +58,13 @@ interface TrustPayState {
   approveMilestone: (milestoneId: string) => Promise<boolean>;
   requestChanges: (
     milestoneId: string,
-    details: { reason: string; comment: string; responseDate: string },
+    details: {
+      reason: string;
+      comment: string;
+      responseDate: string;
+      acceptanceCriterionIds?: string[];
+      evidenceItemIds?: string[];
+    },
   ) => Promise<boolean>;
   raiseDispute: (
     milestoneId: string,
@@ -208,7 +214,16 @@ export default function TrustPayProvider({ children }: { children: ReactNode }) 
   );
 
   const requestChanges = useCallback(
-    (milestoneId: string, details: { reason: string; comment: string; responseDate: string }) =>
+    (
+      milestoneId: string,
+      details: {
+        reason: string;
+        comment: string;
+        responseDate: string;
+        acceptanceCriterionIds?: string[];
+        evidenceItemIds?: string[];
+      },
+    ) =>
       submitDecision(milestoneId, {
         action: "request-changes",
         ...details,

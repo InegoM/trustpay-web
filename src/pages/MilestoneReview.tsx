@@ -4,6 +4,7 @@ import {
   downloadEvidence,
   listSubmissions,
   removeEvidence,
+  respondToChangeRequest,
   submitEvidencePackage,
   updateSubmissionNotes,
   uploadEvidence,
@@ -36,6 +37,7 @@ export default function MilestoneReview({ navigate, milestoneId }: MilestonePage
   const { canCreateProject, canDecide } = useAuth();
   const milestone = project.milestones.find((item) => item.id === milestoneId)!;
   const [submission, setSubmission] = useState<ApiMilestoneSubmission | null>(null);
+  const [submissions, setSubmissions] = useState<ApiMilestoneSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
@@ -44,6 +46,7 @@ export default function MilestoneReview({ navigate, milestoneId }: MilestonePage
   const [file, setFile] = useState<File | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
+  const [response, setResponse] = useState("");
   const [confirming, setConfirming] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
   const cancelSubmitButton = useRef<HTMLButtonElement>(null);
@@ -61,6 +64,7 @@ export default function MilestoneReview({ navigate, milestoneId }: MilestonePage
         ? (items.find((item) => item.status === "draft") ?? items[0] ?? null)
         : (items.find((item) => item.status === "submitted") ?? null);
       setSubmission(current);
+      setSubmissions(items);
       setNotes(current?.notes ?? "");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Evidence could not be loaded.");
@@ -211,6 +215,27 @@ export default function MilestoneReview({ navigate, milestoneId }: MilestonePage
       setBusy(false);
     }
   };
+  const respond = async (changeRequestId: string) => {
+    if (!response.trim()) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const next = await respondToChangeRequest(
+        project.id,
+        milestoneId,
+        changeRequestId,
+        { response: response.trim() },
+        crypto.randomUUID().replace(/-/g, ""),
+      );
+      setSubmission(next);
+      setResponse("");
+      await Promise.all([load(), refresh()]);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Your response could not be recorded.");
+    } finally {
+      setBusy(false);
+    }
+  };
   const closeConfirmation = () => {
     if (busy) return;
     setConfirming(false);
@@ -245,6 +270,11 @@ export default function MilestoneReview({ navigate, milestoneId }: MilestonePage
     (criterion) =>
       !submission?.evidence.some((item) => item.acceptanceCriterionId === criterion.id),
   );
+  const previousSubmissions = submissions
+    .filter((item) => item.id !== submission?.id)
+    .sort((left, right) => right.submissionNumber - left.submissionNumber);
+  const changeRequest = submissions.find((item) => item.changeRequest)?.changeRequest;
+  const changeRequestSubmission = submissions.find((item) => item.changeRequest);
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -287,6 +317,154 @@ export default function MilestoneReview({ navigate, milestoneId }: MilestonePage
       {loading ? (
         <div className={`${CARD} p-8 text-center text-sm text-muted`} role="status">
           Loading evidence package…
+        </div>
+      ) : changeRequest &&
+        changeRequestSubmission &&
+        canCreateProject &&
+        !submission?.responseToChangeRequest ? (
+        <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-3">
+          <main className="space-y-5 xl:col-span-2">
+            <section className={`${CARD} p-5 sm:p-6`} aria-labelledby="change-request-title">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-warn">
+                    Customer feedback
+                  </p>
+                  <h2 id="change-request-title" className="mt-1 text-lg font-semibold text-ink">
+                    Changes requested for Submission #{changeRequestSubmission.submissionNumber}
+                  </h2>
+                </div>
+                <span className="w-fit rounded-full bg-warn-light px-3 py-1 text-xs font-semibold text-warn">
+                  Response requested by {date(changeRequest.responseDueAt)}
+                </span>
+              </div>
+              <dl className="mt-5 grid gap-4 border-y border-edge py-4 text-sm sm:grid-cols-2">
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-wide text-muted">
+                    Reason category
+                  </dt>
+                  <dd className="mt-1 font-medium text-ink">{changeRequest.reasonCategory}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-wide text-muted">
+                    Decision reference
+                  </dt>
+                  <dd className="mt-1 font-mono text-xs text-ink">
+                    {changeRequest.decisionReference ??
+                      changeRequestSubmission.decision?.reference ??
+                      "Reference unavailable"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-wide text-muted">
+                    Requested by
+                  </dt>
+                  <dd className="mt-1 font-medium text-ink">{changeRequest.requestedBy}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-wide text-muted">
+                    Recorded
+                  </dt>
+                  <dd className="mt-1 font-medium text-ink">{date(changeRequest.requestedAt)}</dd>
+                </div>
+              </dl>
+              <div className="mt-5">
+                <h3 className="text-sm font-semibold text-ink">Required changes</h3>
+                <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink-dim">
+                  {changeRequest.requiredChanges}
+                </p>
+              </div>
+              {(changeRequest.acceptanceCriterionIds.length ||
+                changeRequest.evidenceItemIds.length) && (
+                <div className="mt-5 rounded-xl bg-edge/35 p-4 text-sm">
+                  <p className="font-semibold text-ink">Referenced record</p>
+                  {changeRequest.acceptanceCriterionIds.length ? (
+                    <p className="mt-1 text-ink-dim">
+                      {changeRequest.acceptanceCriterionIds.length} acceptance criterion
+                      {changeRequest.acceptanceCriterionIds.length === 1 ? "" : " criteria"}{" "}
+                      referenced.
+                    </p>
+                  ) : null}
+                  {changeRequest.evidenceItemIds.length ? (
+                    <p className="mt-1 text-ink-dim">
+                      {changeRequest.evidenceItemIds.length} evidence item
+                      {changeRequest.evidenceItemIds.length === 1 ? "" : "s"} referenced.
+                    </p>
+                  ) : null}
+                </div>
+              )}
+            </section>
+            {submission?.responseToChangeRequest ? (
+              <section className={`${CARD} p-5 sm:p-6`} aria-labelledby="response-record-title">
+                <h2 id="response-record-title" className="text-base font-semibold text-ink">
+                  Your recorded response
+                </h2>
+                <p className="mt-2 whitespace-pre-wrap text-sm text-ink-dim">
+                  {submission.responseToChangeRequest.response}
+                </p>
+                <p className="mt-3 text-xs text-muted">
+                  Recorded by {submission.responseToChangeRequest.respondedBy} on{" "}
+                  {date(submission.responseToChangeRequest.respondedAt)}
+                </p>
+              </section>
+            ) : (
+              <section className={`${CARD} p-5 sm:p-6`} aria-labelledby="response-title">
+                <h2 id="response-title" className="text-base font-semibold text-ink">
+                  Respond before preparing corrected evidence
+                </h2>
+                <p className="mt-1 text-sm text-muted">
+                  This response becomes part of the permanent project record. TrustPay will create a
+                  new private evidence package; Submission #
+                  {changeRequestSubmission.submissionNumber} remains unchanged.
+                </p>
+                <label className="mt-4 block" htmlFor="change-response">
+                  <span className="text-sm font-medium text-ink">Your response</span>
+                  <textarea
+                    id="change-response"
+                    value={response}
+                    onChange={(event) => setResponse(event.target.value)}
+                    maxLength={4000}
+                    rows={5}
+                    className="mt-2 w-full rounded-xl border border-edge bg-card p-3 text-sm text-ink"
+                    placeholder="Explain the corrective work you will provide."
+                  />
+                </label>
+                <button
+                  disabled={busy || response.trim().length < 5}
+                  onClick={() => void respond(changeRequest.id)}
+                  className="mt-4 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {busy ? "Recording response…" : "Record response and start corrected package"}
+                </button>
+              </section>
+            )}
+          </main>
+          <aside className="space-y-4 xl:sticky xl:top-4">
+            <div className={`${CARD} p-5`}>
+              <h2 className="text-sm font-semibold text-ink">Submission history</h2>
+              <ol className="mt-4 space-y-3">
+                {[submission, ...previousSubmissions].filter(Boolean).map((item) => (
+                  <li key={item!.id} className="rounded-xl border border-edge p-3">
+                    <p className="text-sm font-semibold text-ink">
+                      Submission #{item!.submissionNumber}
+                    </p>
+                    <p className="mt-1 text-xs text-muted">
+                      {item!.status === "draft"
+                        ? "New private draft"
+                        : `Submitted ${date(item!.submittedAt)}`}
+                    </p>
+                    {item!.changeRequest && (
+                      <p className="mt-1 text-xs font-medium text-warn">Changes requested</p>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </div>
+            <p className="text-center text-xs leading-relaxed text-muted">
+              TrustPay records agreements, evidence and decisions. It does not hold or transfer
+              money.
+            </p>
+          </aside>
         </div>
       ) : !submission ? (
         <div className={`${CARD} p-8 text-center`}>
