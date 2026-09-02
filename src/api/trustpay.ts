@@ -64,6 +64,37 @@ export interface ApiMilestoneSubmission {
   agreementVersion: string;
   evidence: ApiEvidenceItem[];
   canEdit: boolean;
+  decision?: {
+    id: string;
+    action: "approve" | "request-changes" | "raise-dispute";
+    decidedBy: string;
+    decidedAt: string;
+    reference: string;
+  };
+  changeRequest?: ApiChangeRequest;
+  responseToChangeRequest?: ApiChangeRequestResponse;
+}
+
+export interface ApiChangeRequest {
+  id: string;
+  reasonCategory: string;
+  requiredChanges: string;
+  reason: string;
+  comment: string;
+  responseDueAt: string;
+  requestedBy: string;
+  requestedAt: string;
+  decisionReference: string;
+  acceptanceCriterionIds: string[];
+  evidenceItemIds: string[];
+}
+
+export interface ApiChangeRequestResponse {
+  id: string;
+  changeRequestId: string;
+  response: string;
+  respondedBy: string;
+  respondedAt: string;
 }
 
 export interface ApiProject {
@@ -200,6 +231,8 @@ export type DecisionInput =
       reason: string;
       comment: string;
       responseDate: string;
+      acceptanceCriterionIds?: string[];
+      evidenceItemIds?: string[];
     }
   | {
       action: "raise-dispute";
@@ -492,6 +525,32 @@ export function submitEvidencePackage(
   return request(
     `${submissionBase(projectId, milestoneId)}/${encodeURIComponent(submissionId)}/submit`,
     { method: "POST", headers: { "Idempotency-Key": idempotencyKey }, body: "{}" },
+  );
+}
+
+export function listChangeRequests(
+  projectId: string,
+  milestoneId: string,
+): Promise<ApiChangeRequest[]> {
+  return request(
+    `/api/v1/projects/${encodeURIComponent(projectId)}/milestones/${encodeURIComponent(milestoneId)}/change-requests`,
+  );
+}
+
+export function respondToChangeRequest(
+  projectId: string,
+  milestoneId: string,
+  changeRequestId: string,
+  input: { response: string; notes?: string },
+  idempotencyKey: string,
+): Promise<ApiMilestoneSubmission> {
+  return request(
+    `/api/v1/projects/${encodeURIComponent(projectId)}/milestones/${encodeURIComponent(milestoneId)}/change-requests/${encodeURIComponent(changeRequestId)}/respond`,
+    {
+      method: "POST",
+      headers: { "Idempotency-Key": idempotencyKey },
+      body: JSON.stringify(input),
+    },
   );
 }
 
