@@ -55,13 +55,21 @@ interface TrustPayState {
   refresh: () => Promise<void>;
   selectProject: (projectId: string) => Promise<boolean>;
   createProject: (input: CreateProjectInput) => Promise<string | null>;
-  approveMilestone: (milestoneId: string) => Promise<boolean>;
+  approveMilestone: (milestoneId: string, expectedSubmissionId: string) => Promise<boolean>;
   requestChanges: (
     milestoneId: string,
-    details: { reason: string; comment: string; responseDate: string },
+    expectedSubmissionId: string,
+    details: {
+      reason: string;
+      comment: string;
+      responseDate: string;
+      acceptanceCriterionIds?: string[];
+      evidenceItemIds?: string[];
+    },
   ) => Promise<boolean>;
   raiseDispute: (
     milestoneId: string,
+    expectedSubmissionId: string,
     details: { reason: string; explanation: string },
   ) => Promise<boolean>;
 }
@@ -166,14 +174,15 @@ export default function TrustPayProvider({ children }: { children: ReactNode }) 
     async (
       milestoneId: string,
       decision:
-        | { action: "approve" }
+        | { action: "approve"; expectedSubmissionId: string }
         | {
             action: "request-changes";
+            expectedSubmissionId: string;
             reason: string;
             comment: string;
             responseDate: string;
           }
-        | { action: "raise-dispute"; reason: string; explanation: string },
+        | { action: "raise-dispute"; expectedSubmissionId: string; reason: string; explanation: string },
     ): Promise<boolean> => {
       setSyncError(null);
       try {
@@ -203,22 +212,34 @@ export default function TrustPayProvider({ children }: { children: ReactNode }) 
   );
 
   const approveMilestone = useCallback(
-    (milestoneId: string) => submitDecision(milestoneId, { action: "approve" }),
+    (milestoneId: string, expectedSubmissionId: string) =>
+      submitDecision(milestoneId, { action: "approve", expectedSubmissionId }),
     [submitDecision],
   );
 
   const requestChanges = useCallback(
-    (milestoneId: string, details: { reason: string; comment: string; responseDate: string }) =>
+    (
+      milestoneId: string,
+      expectedSubmissionId: string,
+      details: {
+        reason: string;
+        comment: string;
+        responseDate: string;
+        acceptanceCriterionIds?: string[];
+        evidenceItemIds?: string[];
+      },
+    ) =>
       submitDecision(milestoneId, {
         action: "request-changes",
+        expectedSubmissionId,
         ...details,
       }),
     [submitDecision],
   );
 
   const raiseDispute = useCallback(
-    (milestoneId: string, details: { reason: string; explanation: string }) =>
-      submitDecision(milestoneId, { action: "raise-dispute", ...details }),
+    (milestoneId: string, expectedSubmissionId: string, details: { reason: string; explanation: string }) =>
+      submitDecision(milestoneId, { action: "raise-dispute", expectedSubmissionId, ...details }),
     [submitDecision],
   );
 
