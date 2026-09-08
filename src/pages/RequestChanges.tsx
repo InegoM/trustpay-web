@@ -91,7 +91,7 @@ export default function RequestChanges({ navigate, milestoneId, showResult }: Mi
   const record = async () => {
     setSubmitting(true);
     if (
-      await requestChanges(milestoneId, {
+      await requestChanges(milestoneId, submission!.id, {
         reason,
         comment: comment.trim(),
         responseDate,

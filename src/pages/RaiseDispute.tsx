@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { listSubmissions } from "@/api/trustpay";
 import { useTrustPay } from "@/state/TrustPayContext";
 import type { MilestonePageProps } from "@/types";
 
@@ -8,6 +9,7 @@ const CARD =
 
 export default function RaiseDispute({ navigate, milestoneId, showResult }: MilestonePageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionId, setSubmissionId] = useState<string | null>(null);
 
   const [disputeReason, setDisputeReason] = useState(
     "Work does not match the approved electrical layout.",
@@ -17,6 +19,12 @@ export default function RaiseDispute({ navigate, milestoneId, showResult }: Mile
 
   const { project: PROJECT, raiseDispute, lastDecision } = useTrustPay();
   const m = PROJECT.milestones.find((item) => item.id === milestoneId)!;
+
+  useEffect(() => {
+    void listSubmissions(PROJECT.id, milestoneId)
+      .then((items) => setSubmissionId(items.find((item) => item.status === "submitted")?.id ?? null))
+      .catch(() => setSubmissionId(null));
+  }, [PROJECT.id, milestoneId]);
 
   if (showResult) {
     return (
@@ -262,10 +270,10 @@ export default function RaiseDispute({ navigate, milestoneId, showResult }: Mile
         </button>
         <button
           onClick={async () => {
-            if (disputeReason.trim() && explanation.trim()) {
+            if (disputeReason.trim() && explanation.trim() && submissionId) {
               setIsSubmitting(true);
               if (
-                await raiseDispute(m.id, {
+                await raiseDispute(m.id, submissionId, {
                   reason: disputeReason,
                   explanation,
                 })
@@ -276,7 +284,7 @@ export default function RaiseDispute({ navigate, milestoneId, showResult }: Mile
               }
             }
           }}
-          disabled={isSubmitting || !disputeReason.trim() || !explanation.trim()}
+          disabled={isSubmitting || !submissionId || !disputeReason.trim() || !explanation.trim()}
           className="flex-1 px-5 py-3 bg-danger text-white text-sm font-semibold rounded-xl hover:bg-danger/90 active:scale-[0.99] transition-all focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? "Recording dispute…" : "Record dispute"}

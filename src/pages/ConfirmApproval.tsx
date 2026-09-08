@@ -234,7 +234,7 @@ export default function ConfirmApproval({ navigate, milestoneId }: MilestonePage
           onClick={async () => {
             if (!checked || !submission || evidenceLoading || evidenceError || isSubmitting) return;
             setIsSubmitting(true);
-            if (await approveMilestone(m.id)) {
+            if (await approveMilestone(m.id, submission.id)) {
               navigate("milestone-approved");
             } else {
               setIsSubmitting(false);

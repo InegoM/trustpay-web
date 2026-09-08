@@ -215,6 +215,23 @@ export default function MilestoneReview({ navigate, milestoneId }: MilestonePage
       setBusy(false);
     }
   };
+  const reviewAndSubmit = async () => {
+    if (!submission) return;
+    setBusy(true);
+    setError(null);
+    try {
+      if (notes !== (submission.notes ?? "")) {
+        const saved = await updateSubmissionNotes(project.id, milestoneId, submission.id, notes);
+        setSubmission(saved);
+      }
+      submissionIdempotencyKey.current = crypto.randomUUID().replace(/-/g, "");
+      setConfirming(true);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Notes could not be saved before submission.");
+    } finally {
+      setBusy(false);
+    }
+  };
   const respond = async (changeRequestId: string) => {
     if (!response.trim()) return;
     setBusy(true);
@@ -273,6 +290,8 @@ export default function MilestoneReview({ navigate, milestoneId }: MilestonePage
   const previousSubmissions = submissions
     .filter((item) => item.id !== submission?.id)
     .sort((left, right) => right.submissionNumber - left.submissionNumber);
+  const latestSubmittedId = submissions.find((item) => item.status === "submitted")?.id;
+  const selectedIsLatestSubmitted = submission?.id === latestSubmittedId;
   const changeRequest = submissions.find((item) => item.changeRequest)?.changeRequest;
   const changeRequestSubmission = submissions.find((item) => item.changeRequest);
 
@@ -715,6 +734,34 @@ export default function MilestoneReview({ navigate, milestoneId }: MilestonePage
                   </dd>
                 </div>
               </dl>
+              {submissions.length > 1 && (
+                <div className="mt-5 border-t border-edge pt-4">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
+                    Submission history
+                  </h3>
+                  <div className="mt-2 space-y-2">
+                    {[...submissions]
+                      .sort((left, right) => right.submissionNumber - left.submissionNumber)
+                      .map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => {
+                            setSubmission(item);
+                            setNotes(item.notes ?? "");
+                          }}
+                          className={`w-full rounded-lg border px-3 py-2 text-left text-xs focus-visible:ring-2 focus-visible:ring-brand ${
+                            item.id === submission.id
+                              ? "border-brand bg-brand/5 text-ink"
+                              : "border-edge text-ink-dim hover:bg-edge/40"
+                          }`}
+                        >
+                          Submission #{item.submissionNumber} · {item.decision?.action === "request-changes" ? "Changes requested" : item.decision?.action === "approve" ? "Approved" : item.status === "submitted" ? "Awaiting decision" : "Draft"}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              )}
             </div>
             {editable && (
               <div className="rounded-2xl border border-warn/30 bg-warn-light p-5">
@@ -733,10 +780,7 @@ export default function MilestoneReview({ navigate, milestoneId }: MilestonePage
                 <button
                   ref={submitTriggerButton}
                   disabled={busy || submission.evidence.length === 0}
-                  onClick={() => {
-                    submissionIdempotencyKey.current = crypto.randomUUID().replace(/-/g, "");
-                    setConfirming(true);
-                  }}
+                  onClick={() => void reviewAndSubmit()}
                   className="mt-4 w-full rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
                 >
                   Review and submit
@@ -745,7 +789,8 @@ export default function MilestoneReview({ navigate, milestoneId }: MilestonePage
             )}
             {submission.status === "submitted" &&
               canDecide &&
-              milestone.status === "awaiting-decision" && (
+              milestone.status === "awaiting-decision" &&
+              selectedIsLatestSubmitted && (
                 <div className={`${CARD} space-y-2 p-5`}>
                   <h2 className="text-sm font-semibold text-ink">Record your decision</h2>
                   <p className="text-xs text-muted">
